@@ -1,0 +1,8 @@
+META.yml
+MYMETA*
+Makefile
+blib/
+inc/
+extlib/
+pm_to_blib
+*~
