@@ -2,8 +2,8 @@ use inc::Module::Install;
 #use Module::Install::AuthorTests;
 #use Module::Install::Repository;
 
-name     'Fluent::AgentLite';
-all_from 'lib/Fluent::AgentLite.pm';
+name     'Fluent-AgentLite';
+all_from 'lib/Fluent/AgentLite.pm';
 license  'perl';
 auto_set_repository;
 repository 'https://github.com/tagomoris/fluent-agent-lite';
