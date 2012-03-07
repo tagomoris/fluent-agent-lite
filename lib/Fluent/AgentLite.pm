@@ -1,4 +1,4 @@
-package App::FluentAgentLite;
+package Fluent::AgentLite;
 
 use strict;
 use warnings;

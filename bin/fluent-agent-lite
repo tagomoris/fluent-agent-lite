@@ -10,8 +10,11 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../extlib/lib/perl5";
 
+use Fluent::AgentLite;
+
 my $TERMINATED = undef;
 $SIG{ HUP } = $SIG{ TERM } = sub { $TERMINATED = 1; };
+my $checker_terminated = sub { $TERMINATED };
 
 use Getopt::Std qw//;
 my %commandline_options;
@@ -26,7 +29,7 @@ Usage: fluent-agent-lite [options] TAG TARGET_FILE PRIMARY_SERVER[:PORT] [SECOND
 Options:
      -p LIST_PATH       primary servers list (server[:port] per line, random selected one server)
      -s LIST_PATH       secondary servers list (server[:port] per line, random selected one server)
-     -b BUF_SIZE        log tailing buffer size (DEFAULT: 100KB)
+     -b BUF_SIZE        log tailing buffer size (DEFAULT: 1MB)
      -n NICE            tail process nice (DEFAULT: 0)
      -t TAIL_PATH       tail path (DEFAULT: /usr/bin/tail)
      -i SECONDS         tail -F sleep interval (GNU tail ONLY, DEFAULT: tail default)
@@ -73,7 +76,7 @@ if ($commandline_options{s}) {
     push @secondary_servers, load_server_list($commandline_options{p});
 }
 
-my $buffer_size = 100 * 1024;
+my $buffer_size = 1024 * 1024;
 if ($commandline_options{b} and $commandline_options{b} > 0) {
     $buffer_size = $commandline_options{b};
 }
@@ -96,9 +99,14 @@ my $logpath = '/tmp/fluent-agent.log';
 if ($commandline_options{l}) {
     $logpath = $commandline_options{l};
 }
+
 close(STDIN)                or die "failed to close STDIN";
 open(STDOUT, ">> $logpath") or die "failed to reopen STDOUT to $logpath";
 open(STDERR, ">> $logpath") or die "failed to reopen STDERR to $logpath";
+
+use IO::Handle;
+autoflush STDOUT 1;
+autoflush STDERR 1;
 
 sub build_tail_command {
     my @command;
@@ -125,13 +133,19 @@ sub open_tail {
 
 sub main {
     my $tailfd = open_tail();
-    my $msgpack_packer; #TODO
-    my $msgpack_sock; #TODO
-    while(not $TERMINATED) {
-        # sysread -> pack -> send loop
-    }
-    # close socket
-    close($tailfd);
+    my $agent = Fluent::AgentLite->new(
+        $checker_terminated,
+        $tailfd,
+        $output_tag,
+        \@primary_servers,
+        \@secondary_servers,
+        {
+            buffer_size => $buffer_size,
+        },
+    );
+    $agent->execute();
+
+    close($tailfd); # agent exits (killed, or on error), and close pipe
 }
 
 main();
