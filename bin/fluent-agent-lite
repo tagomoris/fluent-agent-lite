@@ -20,14 +20,14 @@ use Fluent::AgentLite;
 my $HUPPED = undef;
 $SIG{ HUP } = sub { $HUPPED = 1; };      # to reconnect
 my $TERMINATED = undef;
-$SIG{ TERM } = sub { $TERMINATED = 1; }; # to terminate
+$SIG{ INT } = $SIG{ TERM } = sub { $TERMINATED = 1; }; # to terminate
 
 my $checker_terminated = sub { $TERMINATED; };
 my $checker_reconnect = sub { $HUPPED or $TERMINATED; };
 
 use Getopt::Std qw//;
 my %commandline_options;
-Getopt::Std::getopts('p:s:b:n:t:i:l:vh', \%commandline_options);
+Getopt::Std::getopts('f:p:s:b:n:t:i:l:vh', \%commandline_options);
 
 sub HELP_MESSAGE {
     print <<EOF;
@@ -36,6 +36,7 @@ Usage: fluent-agent-lite [options] TAG TARGET_FILE PRIMARY_SERVER[:PORT] [SECOND
 
        port default: 24224
 Options:
+     -f FIELDNAME       fieldname of fluentd log message attribute (DEFAULT: message)
      -p LIST_PATH       primary servers list (server[:port] per line, random selected one server)
      -s LIST_PATH       secondary servers list (server[:port] per line, random selected one server)
      -b BUF_SIZE        log tailing buffer size (DEFAULT: 1MB)
@@ -71,6 +72,11 @@ sub load_server_list {
 
 my $output_tag = shift @ARGV;
 my $input_file = shift @ARGV;
+
+my $fieldname = 'message';
+if ($commandline_options{f}) {
+    $fieldname = $commandline_options{f};
+}
 
 my @primary_servers;
 my @secondary_servers;
@@ -129,6 +135,7 @@ sub build_tail_command {
         push @command, '-s', $sleep_interval;
     }
     push @command, '-F', $input_file;
+    infof 'tail command line: %s', \@command;
     return @command;
 }
 
@@ -136,12 +143,16 @@ sub open_tail {
     open(my $tailfd, '-|', build_tail_command())
         or die "failed to exec tail";
     my $io = IO::Handle->new();
-    $io->openfd($tailfd, "r");
+    $io->fdopen($tailfd, "r");
     $io->blocking(0); # set nonblock
     return $io;
 }
 
 sub main {
+    unless ( -f $input_file ) {
+        die 'cannot find input file %s', $input_file;
+    }
+
     my $tailfd = open_tail();
     my $agent = Fluent::AgentLite->new(
         $output_tag,
@@ -152,11 +163,12 @@ sub main {
         },
     );
     $agent->execute( {
+        fieldname => $fieldname,
+        tailfd => $tailfd,
         checker => {
             term => $checker_terminated,
             reconnect => $checker_reconnect,
         },
-        tailfd => $tailfd,
     } );
 
     close($tailfd); # agent exits (killed, or on error), and close pipe

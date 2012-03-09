@@ -51,6 +51,7 @@ sub execute {
     my $self = shift;
     my $args = shift;
 
+    my $fieldname = $args->{fieldname};
     my $tailfd = $args->{tailfd};
 
     my $check_terminated = ($args->{checker} || {})->{term} || sub { 0 };
@@ -106,7 +107,7 @@ sub execute {
                     sleep READ_WAIT;
                     next;
                 }
-                $pending_packed = $self->pack($packer, $buffered_lines);
+                $pending_packed = $self->pack($packer, $fieldname, $buffered_lines);
             }
             # send
             my $written = $self->send($sock, $pending_packed);
@@ -143,12 +144,12 @@ sub drain {
     my $chunk;
     while ($readsize < $readlimit) {
         my $bytes = $fd->sysread($chunk, $readlimit);
-        if (not defined $bytes) {
+        if (defined $bytes and $bytes == 0) { # EOF (child process exit)
             last if $readsize > 0;
             warnf "failed to read from child process, maybe killed: $!";
             confess "give up to read tailing fd, see logs";
         }
-        if ($bytes < 1) {
+        if (not defined $bytes) { # I/O Error (no data in fd)
             last;
         }
 
@@ -177,9 +178,9 @@ sub drain {
 # MessagePack 'Forward' object
 # see lib/fluent/plugin/in_forward.rb in fluentd
 sub pack {
-    my ($self,$packer,$lines) = @_;
+    my ($self,$packer,$fieldname,$lines) = @_;
     my $t = time;
-    return $packer->pack([$self->{tag}, [ map { [$t, $_] } @$lines ]]);
+    return $packer->pack([$self->{tag}, [ map { [$t, {$fieldname => $_}] } @$lines ]]);
 }
 
 # choose a server [host, port] randomly from arg arrayref
