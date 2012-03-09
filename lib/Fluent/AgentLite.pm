@@ -146,10 +146,14 @@ sub drain {
         my $bytes = $fd->sysread($chunk, $readlimit);
         if (defined $bytes and $bytes == 0) { # EOF (child process exit)
             last if $readsize > 0;
-            warnf "failed to read from child process, maybe killed: $!";
+            warnf "failed to read from child process, maybe killed.";
             confess "give up to read tailing fd, see logs";
         }
-        if (not defined $bytes) { # I/O Error (no data in fd)
+        if (not defined $bytes and $! eq "Resource temporarily unavailable") { # I/O Error (no data in fd)
+            last;
+        }
+        if (not defined $bytes) { # Other I/O error... what?
+            warnf "I/O error with tail fd: $!";
             last;
         }
 
