@@ -10,15 +10,24 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../extlib/lib/perl5";
 
+use Log::Minimal;
+
+$Log::Minimal::AUTODUMP = 1;
+$Log::Minimal::LOG_LEVEL = "WARN";
+
 use Fluent::AgentLite;
 
+my $HUPPED = undef;
+$SIG{ HUP } = sub { $HUPPED = 1; };      # to reconnect
 my $TERMINATED = undef;
-$SIG{ HUP } = $SIG{ TERM } = sub { $TERMINATED = 1; };
-my $checker_terminated = sub { $TERMINATED };
+$SIG{ TERM } = sub { $TERMINATED = 1; }; # to terminate
+
+my $checker_terminated = sub { $TERMINATED; };
+my $checker_reconnect = sub { $HUPPED or $TERMINATED; };
 
 use Getopt::Std qw//;
 my %commandline_options;
-Getopt::Std::getopts('p:s:b:n:t:i:l:h', \%commandline_options);
+Getopt::Std::getopts('p:s:b:n:t:i:l:vh', \%commandline_options);
 
 sub HELP_MESSAGE {
     print <<EOF;
@@ -34,11 +43,13 @@ Options:
      -t TAIL_PATH       tail path (DEFAULT: /usr/bin/tail)
      -i SECONDS         tail -F sleep interval (GNU tail ONLY, DEFAULT: tail default)
      -l LOG_PATH        log file path (DEFAULT: /tmp/fluent-agent.log)
+     -v                 output logs of level debug and info (DEFAULT: warn/crit only)
      -h                 print this message
 EOF
     exit 0;
 }
 if ($commandline_options{h}) { HELP_MESSAGE; }
+if ($commandline_options{v}) { $Log::Minimal::LOG_LEVEL = 'DEBUG'; }
 
 sub server_entry {
     my $arg = shift;
@@ -93,7 +104,7 @@ my $sleep_interval = undef;
 if ($commandline_options{i}) {
     my $tail_interval_valid = (system('tail -s 1 /dev/null > /dev/null 2>&1') == 0);
     die "tail interval specified, but your tail doesn't have -s option" unless $tail_interval_valid;
-    $sleep_interval = $commandline_options;
+    $sleep_interval = $commandline_options{i};
 }
 my $logpath = '/tmp/fluent-agent.log';
 if ($commandline_options{l}) {
@@ -124,18 +135,15 @@ sub build_tail_command {
 sub open_tail {
     open(my $tailfd, '-|', build_tail_command())
         or die "failed to exec tail";
-    my $default_fd_flags = fcntl($tailfd, F_GETFL, 0)
-        or die "failed to get fd flags";
-    fcntl($tailfd, F_SETFL, $default_fd_flags | O_NONBLOCK)
-        or die "failed to set fd flag O_NONBLOCK";
-    return $tailfd;
+    my $io = IO::Handle->new();
+    $io->openfd($tailfd, "r");
+    $io->blocking(0); # set nonblock
+    return $io;
 }
 
 sub main {
     my $tailfd = open_tail();
     my $agent = Fluent::AgentLite->new(
-        $checker_terminated,
-        $tailfd,
         $output_tag,
         \@primary_servers,
         \@secondary_servers,
@@ -143,11 +151,21 @@ sub main {
             buffer_size => $buffer_size,
         },
     );
-    $agent->execute();
+    $agent->execute( {
+        checker => {
+            term => $checker_terminated,
+            reconnect => $checker_reconnect,
+        },
+        tailfd => $tailfd,
+    } );
 
     close($tailfd); # agent exits (killed, or on error), and close pipe
 }
 
+infof "starting to forward logs.";
+
 main();
+
+infof "process exit.";
 
 exit 0;
