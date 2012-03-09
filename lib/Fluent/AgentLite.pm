@@ -5,6 +5,8 @@ use warnings;
 use English;
 use Carp;
 
+use Time::HiRes;
+
 use Time::Piece;
 use Log::Minimal;
 
@@ -81,7 +83,7 @@ sub execute {
             warnf 'failed to connect servers, primary: %s, secondary: %s', $primary, ($secondary || 'none');
             warnf 'waiting %s seconds to reconnect', $reconnect_wait;
 
-            sleep $reconnect_wait;
+            Time::HiRes::sleep($reconnect_wait);
             $reconnect_wait *= RECONNECT_WAIT_INCR_RATE;
             $reconnect_wait = RECONNECT_WAIT_MAX if $reconnect_wait > RECONNECT_WAIT_MAX;
             next;
@@ -104,7 +106,7 @@ sub execute {
                 my $buffered_lines;
                 ($buffered_lines, $continuous_line) = $self->drain($tailfd, $continuous_line);
                 unless ($buffered_lines) {
-                    sleep READ_WAIT;
+                    Time::HiRes::sleep READ_WAIT;
                     next;
                 }
                 $pending_packed = $self->pack($packer, $fieldname, $buffered_lines);
