@@ -23,7 +23,13 @@ my $TERMINATED = undef;
 $SIG{ INT } = $SIG{ TERM } = sub { $TERMINATED = 1; }; # to terminate
 
 my $checker_terminated = sub { $TERMINATED; };
-my $checker_reconnect = sub { $HUPPED or $TERMINATED; };
+my $checker_reconnect = sub {
+    if (shift) {
+        $HUPPED = undef;
+    } else {
+        $HUPPED or $TERMINATED;
+    }
+};
 
 use Getopt::Std qw//;
 my %commandline_options;

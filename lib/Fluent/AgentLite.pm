@@ -117,6 +117,7 @@ sub execute {
         }
         if ($check_reconnect->()) {
             infof "SIGHUP (or SIGTERM) received";
+            $check_reconnect->(1); # clear SIGHUP signal
         }
         infof "disconnecting to current server";
         if ($sock) {
