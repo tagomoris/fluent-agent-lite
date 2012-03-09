@@ -12,9 +12,6 @@ use lib "$FindBin::Bin/../extlib/lib/perl5";
 
 use Log::Minimal;
 
-$Log::Minimal::AUTODUMP = 1;
-$Log::Minimal::LOG_LEVEL = "WARN";
-
 use Fluent::AgentLite;
 
 my $HUPPED = undef;
@@ -56,7 +53,14 @@ EOF
     exit 0;
 }
 if ($commandline_options{h}) { HELP_MESSAGE; }
-if ($commandline_options{v}) { $Log::Minimal::LOG_LEVEL = 'DEBUG'; }
+
+$Log::Minimal::AUTODUMP = 1;
+if ($commandline_options{v}) {
+    $ENV{LM_DEBUG} = 1;
+    $Log::Minimal::LOG_LEVEL = 'DEBUG';
+} else {
+    $Log::Minimal::LOG_LEVEL = "WARN";
+}
 
 sub server_entry {
     my $arg = shift;
