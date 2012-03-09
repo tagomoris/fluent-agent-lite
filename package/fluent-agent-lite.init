@@ -1,0 +1,212 @@
+#!/bin/bash
+
+prog="fluent-agent-lite"
+
+scriptpath="/usr/local/fluent-agent-lite/bin/"$prog
+
+if [ ! -x $scriptpath ]; then
+    echo "Not installed properly"
+    exit 1
+fi
+
+CONFIG_FILE=/etc/fluent-agent-lite.conf
+if [ ! -r $CONFIG_FILE ]; then
+    echo "Config file does not exists: "$CONFIG_FILE
+    exit 1
+fi
+source $CONFIG_FILE
+
+PID_FILE=/var/run/fluent-agent-lite.pid
+touch $PID_FILE
+if [ ! -w $PID_FILE ]; then
+    echo "Cannot touch pid file: "$PID_FILE
+    exit 1
+fi
+
+RETVAL=0
+
+start() {
+    echo -n $"Starting $prog: "
+
+    pids=$(cat $PID_FILE | wc -l)
+    if [ "x"$pids != 'x0' ]; then
+        echo "process already running? check pidfile: "$PID_FILE
+        return 1;
+    fi
+
+    lines=$(echo "$LOGS" | grep -v '^#' | wc -l)
+    for (( i = 0; i < $lines; i++ )); do
+        COMMANDLINE=$(build_command_line $i)
+        $COMMANDLINE &
+
+        CPID=$!
+        disown $CPID > /dev/null 2>&1
+        echo $CPID >> $PID_FILE
+    done
+    RETVAL=1
+    for (( retries = 0 ; retries < 10 ; retries++ )); do
+        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n ""; else echo -n "1"; if);
+        fi [ "x"$running = "x" ]; then
+            RETVAL=0
+            break
+        fi
+        sleep 1
+    done
+    if [ $RETVAL = 0 ]; then
+        echo "ok."
+        echo -n > $PID_FILE
+    else
+        echo "failed. (timeout after 10sec)"
+    fi
+    return $RETVAL
+}
+stop() {
+    echo -n $"Stopping $prog: "
+    cat $PID_FILE | while read pid ; do
+        kill -s TERM $pid
+    done
+    RETVAL=1
+    for (( retries = 0 ; retries < 10 ; retries++ )); do
+        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "1"; if);
+        fi [ "x"$running = "x" ]; then
+            RETVAL=0
+            break
+        fi
+        sleep 1
+    done
+
+    if [ $RETVAL = 0 ]; then
+        echo "ok."
+        echo -n > $PID_FILE
+    else
+        echo "failed. (timeout after 10sec)"
+    fi
+    return $RETVAL
+}
+reload() {
+    echo -n $"Reloading $prog: "
+    cat $PID_FILE | while read pid ; do
+        kill -s HUP $pid
+    done
+    echo "reset connections."
+    echo "To run with new config file, do 'restart'."
+    RETVAL=0
+    return $RETVAL
+}
+status() {
+    echo -n $"Checking $prog: "
+    status=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "" ; else echo -n "1"; fi);
+    RETVAL=1
+    if [ "x"$status = "x" ]; then
+        RETVAL=0
+    fi
+    if [ $RETVAL = 0 ]; then
+        echo "running."
+    else
+        echo "not running correctly."
+    fi
+    return $RETVAL
+}
+
+PREPARE_GLOBAL=""
+
+NICE_PART=""
+TAG_PREFIX_STRING=""
+OPTIONS_PART=""
+ARGS_SERVER_PART=""
+function prepare_build {
+    if [ "x"$PREPARE_GLOBAL != "x" ]; then
+        return
+    fi
+
+    if [ "x"$TAG_PREFIX != "x" ]; then
+        TAG_PREFIX_STRING=$TAG_PREFIX"."
+    fi
+
+    if [ "x"$PRIMARY_SERVER != "x" ]; then
+        if [ "x"$SECONDARY_SERVER != "x" ]; then
+            ARGS_SERVER_PART=$PRIMARY_SERVER" "$SECONDARY_SERVER
+        else
+            ARGS_SERVER_PART=$PRIMARY_SERVER
+        fi
+    else
+        if [ "x"$PRIMARY_SERVERS_LIST != "x" ]; then
+            OPTIONS_PART="-p "$PRIMARY_SERVERS_LIST
+            if [ "x"$SECONDARY_SERVERS_LIST != "x" ]; then
+                OPTIONS_PART=$OPTIONS_PART" -s "$SECONDARY_SERVERS_LIST
+            fi
+        else
+            echo "Invalid configuration... PRIMARY_SERVER/PRIMARY_SERVERS not found"
+            exit 1
+        fi
+    fi
+    if [ "x"$FIELD_NAME != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -f "$FIELD_NAME
+    fi
+    if [ "x"$READ_BUFFER_SIZE != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -b "$READ_BUFFER_SIZE
+    fi
+    if [ "x"$PROCESS_NICE != "x" ]; then
+        NICE_PART="nice -n "
+        OPTIONS_PART=$OPTIONS_PART" -n "$PROCESS_NICE
+    fi
+    if [ "x"$TAIL_PATH != "x" ]; then
+        if [ ! -x $TAIL_PATH ]; then
+            echo "invalid tail path: "$TAIL_PATH
+            exit 1
+        fi
+        OPTIONS_PART=$OPTIONS_PART" -t "$TAIL_PATH
+    fi
+    if [ "x"$TAIL_INTERVAL != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -i "$TAIL_INTERVAL
+    fi
+    if [ "x"$LOG_PATH != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -l "$LOG_PATH
+    fi
+    if [ "x"$LOG_VERBOSE != "x" ]; then
+        if [ $LOG_VERBOSE != "no" -a $LOG_VERBOSE != "0" -a $LOG_VERBOSE != "false" ]; then
+            OPTIONS_PART=$OPTIONS_PART" -v"
+        fi
+    fi
+    PREPARE_GLOBAL="x"
+}
+
+function build_command_line {
+    pos=$1
+    
+    prepare_build
+
+    lineno=$((pos + 1))
+    line=$(echo "$LOGS" | grep -v '^#' | tail -n $lineno | head -n 1)
+
+    tag=$(echo $line | awk '{print $1;}')
+    tag=$TAG_PREFIX_STRING$tag
+
+    path=$(echo $line | awk '{print $2;}')
+
+    echo -n $NICE_PART $scriptpath $OPTIONS_PART $tag $path $ARGS_SERVER_PART
+    return 0
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status
+        ;;
+  restart)
+        stop && start
+        ;;
+  reload)
+        reload
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|restart|reload|status}"
+        exit 1
+esac
+
+exit $RETVAL
