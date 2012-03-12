@@ -45,7 +45,7 @@ start() {
     done
     RETVAL=1
     for (( retries = 0 ; retries < 10 ; retries++ )); do
-        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n ""; else echo -n "1"; if);
+        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n ""; else echo -n "1"; fi; done);
         if [ "x"$running = "x" ]; then
             RETVAL=0
             break
