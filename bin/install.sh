@@ -8,7 +8,7 @@ fi
 
 cd $(dirname $0)"/../"
 
-SOURCEDIR=$(cd)
+SOURCEDIR=$(pwd)
 
 PREFIX=/usr/local
 INSTALLDIR=$PREFIX/fluent-agent-lite
