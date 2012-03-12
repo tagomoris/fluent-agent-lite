@@ -15,7 +15,7 @@ INSTALLDIR=$PREFIX/fluent-agent-lite
 
 mkdir $INSTALLDIR
 
-cp -rp bin lib extlib $INSTALLDIR
+cp -rp bin lib $INSTALLDIR
 
 cd $INSTALLDIR
 
