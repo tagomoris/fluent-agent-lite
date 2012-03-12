@@ -46,7 +46,7 @@ start() {
     RETVAL=1
     for (( retries = 0 ; retries < 10 ; retries++ )); do
         running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n ""; else echo -n "1"; if);
-        fi [ "x"$running = "x" ]; then
+        if [ "x"$running = "x" ]; then
             RETVAL=0
             break
         fi
@@ -68,7 +68,7 @@ stop() {
     RETVAL=1
     for (( retries = 0 ; retries < 10 ; retries++ )); do
         running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "1"; if);
-        fi [ "x"$running = "x" ]; then
+        if [ "x"$running = "x" ]; then
             RETVAL=0
             break
         fi
@@ -147,7 +147,7 @@ function prepare_build {
         OPTIONS_PART=$OPTIONS_PART" -b "$READ_BUFFER_SIZE
     fi
     if [ "x"$PROCESS_NICE != "x" ]; then
-        NICE_PART="nice -n "
+        NICE_PART="nice -n "$PROCESS_NICE
         OPTIONS_PART=$OPTIONS_PART" -n "$PROCESS_NICE
     fi
     if [ "x"$TAIL_PATH != "x" ]; then
