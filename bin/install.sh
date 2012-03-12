@@ -19,12 +19,12 @@ fi
 
 mkdir $INSTALLDIR
 
-cp -rp bin lib $INSTALLDIR
+cp -rp bin lib Makefile.PL $INSTALLDIR
 
 cd $INSTALLDIR
 
-$SOURCEDIR/bin/cpanm inc::Module::Install
-$SOURCEDIR/bin/cpanm -Lextlib -n --installdeps .
+perl $SOURCEDIR/bin/cpanm -n inc::Module::Install
+perl $SOURCEDIR/bin/cpanm -Lextlib -n --installdeps .
 
 cd $SOURCEDIR
 
