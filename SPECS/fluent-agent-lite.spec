@@ -31,18 +31,21 @@ Log transfer agent service over fluentd protocol.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
-mkdir -p $RPM_BUILD_ROOT%{prefix}%{name}
 env PREFIX=$RPM_BUILD_ROOT bin/install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-# %files
+%files
+%defattr(-,root,root)
 # %config(noreplace) /etc/fluent-agent-lite.conf
 # %config /etc/fluent-agent.servers.primary
 # %config /etc/fluent-agent.servers.secondary
-# %defattr(-,root,root,-)
+%{_sysconfdir}/*
+%{prefix}/*
+%attr(755,root,root) /etc/init.d/fluent-agent-lite
+%attr(755,root,root) %{prefix}/%{name}/bin/fluent-agent-lite
+# %doc README
 
 %changelog
 * Wed Mar 14 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
