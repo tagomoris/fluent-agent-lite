@@ -124,6 +124,7 @@ sub execute {
         }
         if ($check_reconnect->()) {
             infof "SIGHUP (or SIGTERM) received";
+            $disconnected_primary = 0;
             $check_reconnect->(1); # clear SIGHUP signal
         }
         infof "disconnecting to current server";
