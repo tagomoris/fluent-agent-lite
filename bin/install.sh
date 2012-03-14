@@ -19,7 +19,7 @@ if [ -d $INSTALLDIR -a "x"$CLEAN = "xy" ]; then
     rm -rf $INSTALLDIR
 fi
 
-mkdir -f -p $INSTALLDIR
+mkdir -p $INSTALLDIR
 
 cp -rp bin lib Makefile.PL $INSTALLDIR
 
@@ -31,7 +31,7 @@ perl $SOURCEDIR/bin/cpanm -lextlib -n --installdeps .
 
 cd $SOURCEDIR
 
-mkdir -f -p $PREFIX/etc/init.d
+mkdir -p $PREFIX/etc/init.d
 cp package/fluent-agent-lite.init $PREFIX/etc/init.d/fluent-agent-lite
 chmod +x $PREFIX/etc/init.d/fluent-agent-lite
 
