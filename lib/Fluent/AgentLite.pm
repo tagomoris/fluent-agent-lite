@@ -226,9 +226,9 @@ sub send {
         while ($written < $length) {
             my $wbytes = $sock->syswrite($data, $length, $written);
             if ($wbytes) {
-                $written += $wbytes
+                $written += $wbytes;
             }
-            else ($wbytes) {
+            else {
                 die "failed $retry times to send data: $!" if $retry > SEND_RETRY_MAX;
                 $retry += 1;
             }
