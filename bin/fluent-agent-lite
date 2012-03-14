@@ -131,7 +131,6 @@ if ($commandline_options{l}) {
     $logpath = $commandline_options{l};
 }
 
-close(STDIN)                or die "failed to close STDIN";
 open(STDOUT, ">> $logpath") or die "failed to reopen STDOUT to $logpath";
 open(STDERR, ">> $logpath") or die "failed to reopen STDERR to $logpath";
 
@@ -162,12 +161,24 @@ sub open_tail {
     return $io;
 }
 
+sub open_stdin {
+    my $io = IO::Handle->new();
+    $io->fdopen(fileno(STDIN), "r");
+    $io->blocking(0);
+    return $io;
+}
+
 sub main {
-    unless ( -f $input_file ) {
+    my $tailfd;
+    if ( $input_file eq "-" ) {
+        $tailfd = open_stdin();
+    } elsif ( -f $input_file ) {
+        close(STDIN) or die "failed to close STDIN";
+        $tailfd = open_tail();
+    } else {
         die 'cannot find input file %s', $input_file;
     }
 
-    my $tailfd = open_tail();
     my $agent = Fluent::AgentLite->new(
         $output_tag,
         \@primary_servers,
