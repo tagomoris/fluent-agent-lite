@@ -63,11 +63,11 @@ start() {
 stop() {
     echo -n $"Stopping $prog: "
     cat $PID_FILE | while read pid ; do
-        kill -s TERM $pid
+        kill -s TERM $pid > /dev/null 2>&1
     done
     RETVAL=1
     for (( retries = 0 ; retries < 10 ; retries++ )); do
-        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "1"; if);
+        running=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "1"; fi; done);
         if [ "x"$running = "x" ]; then
             RETVAL=0
             break
@@ -86,7 +86,7 @@ stop() {
 reload() {
     echo -n $"Reloading $prog: "
     cat $PID_FILE | while read pid ; do
-        kill -s HUP $pid
+        kill -s HUP $pid > /dev/null 2>&1
     done
     echo "reset connections."
     echo "To run with new config file, do 'restart'."
@@ -95,7 +95,7 @@ reload() {
 }
 status() {
     echo -n $"Checking $prog: "
-    status=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "" ; else echo -n "1"; fi);
+    status=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "" ; else echo -n "1"; fi; done);
     RETVAL=1
     if [ "x"$status = "x" ]; then
         RETVAL=0
@@ -148,7 +148,8 @@ function prepare_build {
     fi
     if [ "x"$PROCESS_NICE != "x" ]; then
         NICE_PART="nice -n "$PROCESS_NICE
-        OPTIONS_PART=$OPTIONS_PART" -n "$PROCESS_NICE
+        # OPTIONS_PART=$OPTIONS_PART" -n "$PROCESS_NICE
+        # if perl script run with 'nice -n -1', then tail (forked by perl) runs also run as -1.
     fi
     if [ "x"$TAIL_PATH != "x" ]; then
         if [ ! -x $TAIL_PATH ]; then
