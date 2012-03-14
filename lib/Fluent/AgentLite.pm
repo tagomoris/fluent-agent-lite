@@ -74,7 +74,7 @@ sub execute {
         my $primary = $self->choose($self->{servers}->{primary});
         my $secondary;
 
-        my $sock = $self->connect($primary);
+        my $sock = $self->connect($primary) unless $disconnected_primary;
         if (not $sock and $self->{servers}->{secondary}) {
             $secondary = $self->choose($self->{servers}->{secondary});
             $sock = $self->connect($self->choose($self->{servers}->{secondary}));
@@ -83,6 +83,7 @@ sub execute {
             # failed to connect both of primary / secondary
             warnf 'failed to connect servers, primary: %s, secondary: %s', $primary, ($secondary || 'none');
             warnf 'waiting %s seconds to reconnect', $reconnect_wait;
+            $disconnected_primary = 0;
 
             Time::HiRes::sleep($reconnect_wait);
             $reconnect_wait *= RECONNECT_WAIT_INCR_RATE;
