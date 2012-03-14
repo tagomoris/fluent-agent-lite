@@ -94,13 +94,24 @@ reload() {
 }
 status() {
     echo -n $"Checking $prog: "
-    status=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "" ; else echo -n "1"; fi; done);
+    if [ ! -f $PID_FILE ]; then
+        working=0
+    else
+        working=$(cat $PID_FILE | wc -l)
+    fi
+    if [ "x"$working != x"0" ]; then
+        status=$(cat $PID_FILE | while read p ; do if ps -p $p > /dev/null; then echo -n "" ; else echo -n "1"; fi; done);
+    fi
     RETVAL=1
-    if [ "x"$status = "x" ]; then
+    if [ "x"$working = "x0" -o "x"$status = "x" ]; then
         RETVAL=0
     fi
     if [ $RETVAL = 0 ]; then
-        echo "running."
+        if [ "x"$working = "x0" ]; then
+            echo "not running, ok"
+        else
+            echo "ok."
+        fi
     else
         echo "not running correctly."
     fi
