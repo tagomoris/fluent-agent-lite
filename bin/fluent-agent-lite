@@ -104,7 +104,7 @@ if ($commandline_options{p}) {
 }
 if ($commandline_options{s}) {
     die "secondary server list file not exists" unless -f $commandline_options{s};
-    push @secondary_servers, load_server_list($commandline_options{p});
+    push @secondary_servers, load_server_list($commandline_options{s});
 }
 
 my $buffer_size = 1024 * 1024;
