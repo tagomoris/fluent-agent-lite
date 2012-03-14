@@ -54,7 +54,6 @@ start() {
     done
     if [ $RETVAL = 0 ]; then
         echo "ok."
-        echo -n > $PID_FILE
     else
         echo "failed. (timeout after 10sec)"
     fi

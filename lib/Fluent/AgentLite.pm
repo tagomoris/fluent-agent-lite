@@ -225,11 +225,13 @@ sub send {
     eval {
         while ($written < $length) {
             my $wbytes = $sock->syswrite($data, $length, $written);
-            unless ($wbytes) {
+            if ($wbytes) {
+                $written += $wbytes
+            }
+            else ($wbytes) {
                 die "failed $retry times to send data: $!" if $retry > SEND_RETRY_MAX;
                 $retry += 1;
             }
-            $written += $wbytes;
         }
     };
     if ($@) {
