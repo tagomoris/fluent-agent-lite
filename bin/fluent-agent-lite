@@ -11,6 +11,10 @@ use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../extlib/lib/perl5";
 
 use Log::Minimal;
+local $Log::Minimal::PRINT => sub {
+    my ( $time, $type, $message, $trace,$raw_message) = @_;
+    warn "$time [$type] ($PID) $message at $trace\n";
+};
 
 use Fluent::AgentLite;
 
