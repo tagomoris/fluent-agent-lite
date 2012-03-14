@@ -65,6 +65,7 @@ sub execute {
 
     my $pending_packed;
     my $continuous_line;
+    my $disconnected_primary = 0;
 
     while(not $check_terminated->()) {
         # at here, connection initialized (after retry wait if required)
@@ -113,7 +114,10 @@ sub execute {
             }
             # send
             my $written = $self->send($sock, $pending_packed);
-            last unless $written; # failed to write (socket error).
+            unless ($written) { # failed to write (socket error).
+                $disconnected_primary = 1 unless $secondary;
+                last;
+            }
 
             $pending_packed = undef;
         }
