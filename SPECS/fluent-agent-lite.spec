@@ -31,7 +31,7 @@ Log transfer agent service over fluentd protocol.
 rm -rf $RPM_BUILD_ROOT
 
 mkdir -p $RPM_BUILD_ROOT%{prefix}%{name}
-PREFIX=$RPM_BUILD_ROOT bin/install.sh
+env PREFIX=$RPM_BUILD_ROOT bin/install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT

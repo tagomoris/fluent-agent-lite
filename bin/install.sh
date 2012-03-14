@@ -19,14 +19,14 @@ if [ -d $INSTALLDIR -a "x"$CLEAN = "xy" ]; then
     rm -rf $INSTALLDIR
 fi
 
-mkdir -f -p $PREFIX$INSTALLDIR
+mkdir -f -p $INSTALLDIR
 
-cp -rp bin lib Makefile.PL $PREFIX$INSTALLDIR
+cp -rp bin lib Makefile.PL $INSTALLDIR
 
-cd $PREFIX$INSTALLDIR
+cd $INSTALLDIR
 
 perl $SOURCEDIR/bin/cpanm -n inc::Module::Install
-perl $SOURCEDIR/bin/cpanm -Lextlib -n --installdeps .
+perl $SOURCEDIR/bin/cpanm -lextlib -n --installdeps .
 
 cd $SOURCEDIR
 
