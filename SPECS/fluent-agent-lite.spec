@@ -3,6 +3,8 @@
 %define prefix /usr/local
 %define _use_internal_dependency_generator 0
 
+%global debug_package %{nil}
+
 Name:           fluent-agent-lite
 Version:        %{version}
 Release:        original
@@ -18,7 +20,7 @@ Source0:        fluent-agent-lite.v%{version}.tar.gz
 # Source3:        fluent-agent.servers.secondary
 BuildRoot:      %{_tmppath}/%{name}-root
 
-BuildArch:      noarch
+ExclusiveArch:  x86_64
 AutoReq:        no
 
 %description
