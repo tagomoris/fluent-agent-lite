@@ -13,7 +13,7 @@ Summary:        Log transfer agent service over fluentd protocol
 Group:          Applications/System
 License:        Apache Software License v2
 URL:            https://github.com/tagomoris/fluent-agent-lite
-# Source0:        https://github.com/tagomoris/fluent-agent-lite/tarball/v%{version}
+# Source0:        https://github.com/downloads/tagomoris/fluent-agent-lite/fluent-agent-lite.v%{version}.tar.gz
 Source0:        fluent-agent-lite.v%{version}.tar.gz
 # Source1:        fluent-agent-lite.conf
 # Source2:        fluent-agent.servers.primary
@@ -40,10 +40,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-# %config(noreplace) /etc/fluent-agent-lite.conf
-# %config /etc/fluent-agent.servers.primary
-# %config /etc/fluent-agent.servers.secondary
-%{_sysconfdir}/*
+%config(noreplace) %{_sysconfdir}/fluent-agent-lite.conf
+# %config %{_sysconfdir}/fluent-agent.servers.primary
+# %config %{_sysconfdir}/fluent-agent.servers.secondary
+%{_sysconfdir}/init.d/fluent-agent-lite
 %{prefix}/*
 # %doc README
 
