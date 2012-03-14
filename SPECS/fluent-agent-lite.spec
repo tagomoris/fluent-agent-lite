@@ -43,8 +43,6 @@ rm -rf $RPM_BUILD_ROOT
 # %config /etc/fluent-agent.servers.secondary
 %{_sysconfdir}/*
 %{prefix}/*
-%attr(755,root,root) /etc/init.d/fluent-agent-lite
-%attr(755,root,root) %{prefix}/%{name}/bin/fluent-agent-lite
 # %doc README
 
 %changelog
