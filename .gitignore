@@ -6,3 +6,4 @@ inc/
 extlib/
 pm_to_blib
 *~
+rpmbuild/
