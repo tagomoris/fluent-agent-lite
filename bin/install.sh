@@ -27,7 +27,7 @@ cd $INSTALLDIR
 
 export PERL_CPANM_OPT="--local-lib=~/perl5"
 perl $SOURCEDIR/bin/cpanm -n inc::Module::Install
-perl $SOURCEDIR/bin/cpanm -lextlib -n --installdeps .
+perl $SOURCEDIR/bin/cpanm -lextlib -n --reinstall --installdeps .
 
 cd $SOURCEDIR
 
