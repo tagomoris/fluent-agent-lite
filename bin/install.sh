@@ -15,6 +15,10 @@ if [ "x"$PREFIX = "x" ]; then
 fi
 INSTALLDIR=$PREFIX/usr/local/fluent-agent-lite
 
+if [ "x"$PERL_PATH = "x" ]; then
+    $PERL_PATH="perl"
+fi
+
 if [ -d $INSTALLDIR -a "x"$CLEAN = "xy" ]; then
     rm -rf $INSTALLDIR
 fi
@@ -26,8 +30,8 @@ cp -rp bin lib Makefile.PL $INSTALLDIR
 cd $INSTALLDIR
 
 export PERL_CPANM_OPT="--local-lib=~/perl5"
-perl $SOURCEDIR/bin/cpanm -n inc::Module::Install
-perl $SOURCEDIR/bin/cpanm -lextlib -n --reinstall --installdeps .
+$PERL_PATH $SOURCEDIR/bin/cpanm -n inc::Module::Install
+$PERL_PATH $SOURCEDIR/bin/cpanm -lextlib -n --reinstall --installdeps .
 
 cd $SOURCEDIR
 

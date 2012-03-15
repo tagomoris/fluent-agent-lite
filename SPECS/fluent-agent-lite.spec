@@ -1,6 +1,8 @@
 %define name fluent-agent-lite
 %define version 0.1
 %define prefix /usr/local
+%define build_perl_path /usr/bin/perl
+
 %define _use_internal_dependency_generator 0
 
 %global debug_package %{nil}
@@ -33,7 +35,7 @@ Log transfer agent service over fluentd protocol.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-env PREFIX=$RPM_BUILD_ROOT bin/install.sh
+env PREFIX=$RPM_BUILD_ROOT PERL_PATH=%{build_perl_path} bin/install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT

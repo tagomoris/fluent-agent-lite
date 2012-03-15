@@ -120,6 +120,10 @@ status() {
 
 PREPARE_GLOBAL=""
 
+if [ "x"$PERL_PATH = "x" ]; then
+    PERL_PATH="perl"
+fi
+
 NICE_PART=""
 TAG_PREFIX_STRING=""
 OPTIONS_PART=""
@@ -195,7 +199,7 @@ function build_command_line {
 
     path=$(echo $line | awk '{print $2;}')
 
-    echo -n $NICE_PART $scriptpath $OPTIONS_PART $tag $path $ARGS_SERVER_PART
+    echo -n $NICE_PART $PERL_PATH $scriptpath $OPTIONS_PART $tag $path $ARGS_SERVER_PART
     return 0
 }
 
