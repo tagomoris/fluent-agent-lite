@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.1
+%define version 0.2
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
