@@ -193,12 +193,13 @@ sub drain {
     return (\@buffered_lines, $continuous_line, $readlines);
 }
 
-# MessagePack 'Forward' object
+# MessagePack 'PackedForward' object
 # see lib/fluent/plugin/in_forward.rb in fluentd
 sub pack {
     my ($self,$packer,$fieldname,$lines) = @_;
     my $t = time;
-    return $packer->pack([$self->{tag}, [ map { [$t, {$fieldname => $_}] } @$lines ]]);
+    my $event_stream = join('', map { $packer->pack([$t, {$fieldname => $_}]) } @$lines);
+    return $packer->pack([$self->{tag}, $event_stream]);
 }
 
 # MessagePack 'Message' object
