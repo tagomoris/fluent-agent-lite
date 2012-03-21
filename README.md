@@ -10,7 +10,7 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ### VERSION
 
-0.2
+0.3
 
 ## INSTALL
 
@@ -85,6 +85,10 @@ Path of tail command (Default: /usr/bin/tail).
 'sleep interval' of tail command in seconds (Default: 1.0). For high throughput log file, you can specify 'TAIL_INTERVAL="0.5"' or any other values (but over "0.1").
 
 Caution: This cofiguration is for GNU tail only.
+
+### DRAIN_LOG_TAG
+
+Tag name of drain\_log (messages count per drain/send to server), which is emitted to configured fluentd sever as fluentd message. Default is none (not to send drain\_log).
 
 ### LOG_PATH
 
