@@ -18,7 +18,7 @@ fi
 INSTALLDIR=$PREFIX/usr/local/fluent-agent-lite
 
 if [ "x"$PERL_PATH = "x" ]; then
-    $PERL_PATH="perl"
+    PERL_PATH="perl"
 fi
 
 if [ -d $INSTALLDIR -a "x"$CLEAN = "xy" ]; then
