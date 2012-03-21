@@ -50,11 +50,11 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
-* Wed Mar 14 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
-- initial packaging attempt
-* Thu Mar 15 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
-- bugfix about path of perl
 * Wed Mar 21 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
 - fix to send PackedForward object
 - bugfix about installer / init script
 - add feature about drain log
+* Thu Mar 15 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
+- bugfix about path of perl
+* Wed Mar 14 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
+- initial packaging attempt
