@@ -17,17 +17,17 @@ fi
 source $CONFIG_FILE
 
 PID_FILE=/var/run/fluent-agent-lite.pid
-touch $PID_FILE
-if [ ! -w $PID_FILE ]; then
-    echo "Cannot touch pid file: "$PID_FILE
-    exit 1
-fi
 
 RETVAL=0
 
 start() {
     echo -n $"Starting $prog: "
 
+    touch $PID_FILE
+    if [ ! -w $PID_FILE ]; then
+        echo "Cannot touch pid file: "$PID_FILE
+        exit 1
+    fi
     pids=$(cat $PID_FILE | wc -l)
     if [ "x"$pids != 'x0' ]; then
         echo "process already running? check pidfile: "$PID_FILE
@@ -61,6 +61,11 @@ start() {
 }
 stop() {
     echo -n $"Stopping $prog: "
+    touch $PID_FILE
+    if [ ! -w $PID_FILE ]; then
+        echo "Cannot touch pid file: "$PID_FILE
+        exit 1
+    fi
     cat $PID_FILE | while read pid ; do
         kill -s TERM $pid > /dev/null 2>&1
     done
@@ -174,6 +179,9 @@ function prepare_build {
     fi
     if [ "x"$TAIL_INTERVAL != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -i "$TAIL_INTERVAL
+    fi
+    if [ "x"$DRAIN_LOG_TAG != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -d "$DRAIN_LOG_TAG
     fi
     if [ "x"$LOG_PATH != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -l "$LOG_PATH

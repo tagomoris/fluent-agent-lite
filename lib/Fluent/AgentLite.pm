@@ -42,6 +42,7 @@ sub new {
             secondary => $secondary_servers,
         },
         buffer_size => $configuration->{buffer_size},
+        drain_log_tag => $configuration->{drain_log_tag},
     };
 
     srand (time ^ $PID ^ unpack("%L*", `ps axww | gzip`));
@@ -104,14 +105,18 @@ sub execute {
             }
 
             # drain (sysread)
+            my $lines = 0;
             if (not $pending_packed) {
                 my $buffered_lines;
-                ($buffered_lines, $continuous_line) = $self->drain($tailfd, $continuous_line);
+                ($buffered_lines, $continuous_line, $lines) = $self->drain($tailfd, $continuous_line);
                 unless ($buffered_lines) {
                     Time::HiRes::sleep READ_WAIT;
                     next;
                 }
                 $pending_packed = $self->pack($packer, $fieldname, $buffered_lines);
+                if ($self->{drain_log_tag}) {
+                    $pending_packed .= $self->pack_drainlog($packer, $self->{drain_log_tag}, $lines);
+                }
             }
             # send
             my $written = $self->send($sock, $pending_packed);
@@ -182,10 +187,10 @@ sub drain {
         }
     }
     if ($readlines < 1) {
-        return undef, $continuous_line;
+        return undef, $continuous_line, 0;
     }
 
-    return (\@buffered_lines, $continuous_line);
+    return (\@buffered_lines, $continuous_line, $readlines);
 }
 
 # MessagePack 'Forward' object
@@ -194,6 +199,13 @@ sub pack {
     my ($self,$packer,$fieldname,$lines) = @_;
     my $t = time;
     return $packer->pack([$self->{tag}, [ map { [$t, {$fieldname => $_}] } @$lines ]]);
+}
+
+# MessagePack 'Message' object
+sub pack_drainlog {
+    my ($self,$packer,$drain_log_tag,$drain_lines) = @_;
+    my $t = time;
+    return $packer->pack([$drain_log_tag, $t, {'drain' => $drain_lines}]);
 }
 
 # choose a server [host, port] randomly from arg arrayref
