@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# fluent-agent-lite
+# chkconfig:   - 85 15
+# description: log transfer agent, for Fluentd's 'forward' input.
+# config:      /etc/fluent-agent-lite.conf
 
 prog="fluent-agent-lite"
 
