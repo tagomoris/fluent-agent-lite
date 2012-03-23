@@ -10,7 +10,7 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ### VERSION
 
-0.3
+0.4
 
 ## INSTALL
 
