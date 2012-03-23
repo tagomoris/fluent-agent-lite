@@ -5,6 +5,7 @@ all_from 'lib/Fluent/AgentLite.pm';
 license  'perl';
 
 requires 'Data::MessagePack' => '0.35_01';
+requires 'JSON::XS';
 
 requires 'Time::Piece';
 requires 'Log::Minimal';

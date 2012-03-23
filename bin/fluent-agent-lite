@@ -34,7 +34,7 @@ my $checker_reconnect = sub {
 
 use Getopt::Std qw//;
 my %commandline_options;
-Getopt::Std::getopts('f:p:s:b:n:t:i:l:d:vh', \%commandline_options);
+Getopt::Std::getopts('f:p:s:b:n:t:i:l:d:jvh', \%commandline_options);
 
 sub HELP_MESSAGE {
     print <<EOF;
@@ -52,6 +52,7 @@ Options:
      -i SECONDS         tail -F sleep interval (GNU tail ONLY, DEFAULT: tail default)
      -l LOG_PATH        log file path (DEFAULT: /tmp/fluent-agent.log)
      -d DRAIN_LOG_TAG   emits drain log to fluentd: messages per drain/send (DEFAULT: not to emits)
+     -j                 use JSON for message structure in transfering (highly experimental)
      -v                 output logs of level debug and info (DEFAULT: warn/crit only)
      -h                 print this message
 EOF
@@ -137,6 +138,11 @@ if ($commandline_options{d}) {
     $drain_log_tag = $commandline_options{d};
 }
 
+my $output_format = undef; # default: MessagePack
+if ($commandline_options{j}) {
+    $output_format = 'json';
+}
+
 open(STDOUT, ">> $logpath") or die "failed to reopen STDOUT to $logpath";
 open(STDERR, ">> $logpath") or die "failed to reopen STDERR to $logpath";
 
@@ -192,6 +198,7 @@ sub main {
         {
             buffer_size => $buffer_size,
             drain_log_tag => $drain_log_tag,
+            output_format => $output_format,
         },
     );
     $agent->execute( {

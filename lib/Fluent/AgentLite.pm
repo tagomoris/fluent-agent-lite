@@ -43,7 +43,13 @@ sub new {
         },
         buffer_size => $configuration->{buffer_size},
         drain_log_tag => $configuration->{drain_log_tag},
+        output_format => $configuration->{output_format},
     };
+
+    if (defined $self->{output_format} and $self->{output_format} eq 'json') {
+        *pack = *pack_json;
+        *pack_drainlog = *pack_drainlog_json;
+    }
 
     srand (time ^ $PID ^ unpack("%L*", `ps axww | gzip`));
 
@@ -202,11 +208,25 @@ sub pack {
     return $packer->pack([$self->{tag}, $event_stream]);
 }
 
+sub pack_json {
+    use JSON::XS qw/encode_json/;
+    my ($self,$packer,$fieldname,$lines) = @_;
+    my $t = time;
+    return encode_json([$self->{tag}, [map { [$t, {$fieldname => $_}] } @$lines ]]);
+}
+
 # MessagePack 'Message' object
 sub pack_drainlog {
     my ($self,$packer,$drain_log_tag,$drain_lines) = @_;
     my $t = time;
     return $packer->pack([$drain_log_tag, $t, {'drain' => $drain_lines}]);
+}
+
+sub pack_drainlog_json {
+    use JSON::XS qw/encode_json/;
+    my ($self,$packer,$drain_log_tag,$drain_lines) = @_;
+    my $t = time;
+    return encode_json([$drain_log_tag, $t, {'drain' => $drain_lines}]);
 }
 
 # choose a server [host, port] randomly from arg arrayref
