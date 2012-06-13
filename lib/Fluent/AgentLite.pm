@@ -5,6 +5,8 @@ use warnings;
 use English;
 use Carp;
 
+use POSIX qw(:errno_h);
+
 use Time::HiRes;
 
 use Time::Piece;
@@ -169,7 +171,7 @@ sub drain {
             warnf "failed to read from child process, maybe killed.";
             confess "give up to read tailing fd, see logs";
         }
-        if (not defined $bytes and $! eq "Resource temporarily unavailable") { # I/O Error (no data in fd)
+        if (not defined $bytes and $! == EAGAIN) { # I/O Error (no data in fd): "Resource temporarily unavailable"
             last;
         }
         if (not defined $bytes) { # Other I/O error... what?
