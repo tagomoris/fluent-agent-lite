@@ -180,6 +180,16 @@ sub open_stdin {
     return $io;
 }
 
+sub close_fd {
+    my $fd = shift;
+    eval {
+        $fd->blocking(1);
+        close($fd);
+    };
+    # throw away errors
+    1;
+}
+
 sub main {
     my $tailfd;
     if ( $input_file eq "-" ) {
@@ -210,7 +220,8 @@ sub main {
         },
     } );
 
-    close($tailfd); # agent exits (killed, or on error), and close pipe
+    # gent exits (killed, or on error), and close pipe
+    close_fd($tailfd);
 }
 
 infof "starting to forward logs.";
