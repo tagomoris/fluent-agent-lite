@@ -44,7 +44,7 @@ sub new {
             secondary => $secondary_servers,
         },
         buffer_size => $configuration->{buffer_size},
-        ping_message => $configuration->{ping_message}
+        ping_message => $configuration->{ping_message},
         drain_log_tag => $configuration->{drain_log_tag},
         output_format => $configuration->{output_format},
     };
@@ -120,8 +120,9 @@ sub execute {
 
             # ping message (if enabled)
             my $ping_packed = undef;
-            if ($self->{ping_message} and time > $last_ping_message + $self->{ping_message}->{interval}) {
+            if ($self->{ping_message} and time >= $last_ping_message + $self->{ping_message}->{interval}) {
                 $ping_packed = $self->pack_ping_message($packer, $self->{ping_message}->{tag}, $self->{ping_message}->{data});
+                $last_ping_message = time;
             }
 
             # drain (sysread)
