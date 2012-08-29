@@ -185,6 +185,16 @@ function prepare_build {
     if [ "x"$TAIL_INTERVAL != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -i "$TAIL_INTERVAL
     fi
+    if [ "x"$PING_TAG != "x" ]; then
+        if [ "x"$PING_DATA = "x" ]; then
+            echo "ping data PING_DATA not specified"
+            exit 1
+        fi
+        OPTIONS_PART=$OPTIONS_PART" -P "$PING_TAG":"$PING_DATA
+        if [ "x"$PING_INTERVAL != "x" ]; then
+            OPTIONS_PART=$OPTIONS_PART" -S "$PING_INTERVAL
+        fi
+    fi
     if [ "x"$DRAIN_LOG_TAG != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -d "$DRAIN_LOG_TAG
     fi

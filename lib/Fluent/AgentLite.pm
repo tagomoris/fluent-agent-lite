@@ -44,6 +44,7 @@ sub new {
             secondary => $secondary_servers,
         },
         buffer_size => $configuration->{buffer_size},
+        ping_message => $configuration->{ping_message}
         drain_log_tag => $configuration->{drain_log_tag},
         output_format => $configuration->{output_format},
     };
@@ -71,6 +72,11 @@ sub execute {
     my $packer = Data::MessagePack->new();
 
     my $reconnect_wait = RECONNECT_WAIT_MIN;
+
+    my $last_ping_message = time;
+    if ($self->{ping_message}) {
+        $last_ping_message = time - $self->{ping_message}->{interval} * 2;
+    }
 
     my $pending_packed;
     my $continuous_line;
@@ -112,18 +118,31 @@ sub execute {
                 last;
             }
 
+            # ping message (if enabled)
+            my $ping_packed = undef;
+            if ($self->{ping_message} and time > $last_ping_message + $self->{ping_message}->{interval}) {
+                $ping_packed = $self->pack_ping_message($packer, $self->{ping_message}->{tag}, $self->{ping_message}->{data});
+            }
+
             # drain (sysread)
             my $lines = 0;
             if (not $pending_packed) {
                 my $buffered_lines;
                 ($buffered_lines, $continuous_line, $lines) = $self->drain($tailfd, $continuous_line);
-                unless ($buffered_lines) {
+
+                if ($buffered_lines) {
+                    $pending_packed = $self->pack($packer, $fieldname, $buffered_lines);
+                    if ($self->{drain_log_tag}) {
+                        $pending_packed .= $self->pack_drainlog($packer, $self->{drain_log_tag}, $lines);
+                    }
+                }
+                if ($ping_packed) {
+                    $pending_packed ||= '';
+                    $pending_packed .= $ping_packed;
+                }
+                unless ($pending_packed) {
                     Time::HiRes::sleep READ_WAIT;
                     next;
-                }
-                $pending_packed = $self->pack($packer, $fieldname, $buffered_lines);
-                if ($self->{drain_log_tag}) {
-                    $pending_packed .= $self->pack_drainlog($packer, $self->{drain_log_tag}, $lines);
                 }
             }
             # send
@@ -215,6 +234,13 @@ sub pack_json {
     my ($self,$packer,$fieldname,$lines) = @_;
     my $t = time;
     return encode_json([$self->{tag}, [map { [$t, {$fieldname => $_}] } @$lines ]]);
+}
+
+# MessagePack 'Message' object
+sub pack_ping_message {
+    my ($self,$packer,$ping_tag,$ping_data) = @_;
+    my $t = time;
+    return $packer->pack([$ping_tag, $t, {'data' => $ping_data}]);
 }
 
 # MessagePack 'Message' object
