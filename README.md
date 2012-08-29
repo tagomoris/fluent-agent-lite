@@ -86,6 +86,10 @@ Path of tail command (Default: /usr/bin/tail).
 
 Caution: This cofiguration is for GNU tail only.
 
+### PING_TAG, PING_DATA, PING_INTERVAL
+
+Ping message tag/data and emit interval specification. Without PING\_TAG, fluent-agent-lite doesn't emit ping\_messages.
+
 ### DRAIN_LOG_TAG
 
 Tag name of drain\_log (messages count per drain/send to server), which is emitted to configured fluentd sever as fluentd message. Default is none (not to send drain\_log).

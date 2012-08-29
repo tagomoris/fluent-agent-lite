@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.4
+%define version 0.5
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
@@ -50,6 +50,8 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
+* Wed Aug 29 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
+- add ping_message options
 * Wed Mar 21 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
 - fix to send PackedForward object
 - bugfix about installer / init script
