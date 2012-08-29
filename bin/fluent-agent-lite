@@ -141,7 +141,7 @@ if ($commandline_options{P}) {
     $commandline_options{P} =~ /^([^:]+):(.+)$/;
     $ping_message = +{
         tag => $1,
-        data => $2,
+        data => $2 . ' ' . $input_file ,
         interval => ($commandline_options{S} or 60),
     };
 }

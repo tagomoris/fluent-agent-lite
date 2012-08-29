@@ -90,6 +90,8 @@ Caution: This cofiguration is for GNU tail only.
 
 Ping message tag/data and emit interval specification. Without PING\_TAG, fluent-agent-lite doesn't emit ping\_messages.
 
+Actual 'data' field of ping message is 'PING_DATA PATH\_OF\_INPUT\_FILE'.
+
 ### DRAIN_LOG_TAG
 
 Tag name of drain\_log (messages count per drain/send to server), which is emitted to configured fluentd sever as fluentd message. Default is none (not to send drain\_log).
