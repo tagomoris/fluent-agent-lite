@@ -178,12 +178,12 @@ sub build_tail_command {
 }
 
 sub open_tail {
-    open(my $tailfd, '-|', build_tail_command())
+    my $pid = open(my $tailfd, '-|', build_tail_command())
         or die "failed to exec tail";
     my $io = IO::Handle->new();
     $io->fdopen($tailfd, "r");
     $io->blocking(0); # set nonblock
-    return $io;
+    return ($io, $pid);
 }
 
 sub open_stdin {
@@ -204,12 +204,12 @@ sub close_fd {
 }
 
 sub main {
-    my $tailfd;
+    my ($tailfd, $tailpid);
     if ( $input_file eq "-" ) {
         $tailfd = open_stdin();
-    } elsif ( -f $input_file ) {
+    } elsif ( -f $input_file or -l $input_file ) {
         close(STDIN) or die "failed to close STDIN";
-        $tailfd = open_tail();
+        ($tailfd, $tailpid) = open_tail();
     } else {
         die 'cannot find input file %s', $input_file;
     }
@@ -233,6 +233,9 @@ sub main {
             reconnect => $checker_reconnect,
         },
     } );
+
+    warnf "kill TERM $tailpid";
+    kill TERM => $tailpid if defined $tailpid;
 
     # gent exits (killed, or on error), and close pipe
     close_fd($tailfd);
