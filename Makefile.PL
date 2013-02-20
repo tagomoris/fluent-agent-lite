@@ -11,4 +11,6 @@ requires 'Time::HiRes';
 requires 'Time::Piece';
 requires 'Log::Minimal';
 
+install_script 'bin/fluent-agent-lite';
+
 WriteAll;
