@@ -22,7 +22,7 @@ Source0:        fluent-agent-lite.v%{version}.tar.gz
 # Source3:        fluent-agent.servers.secondary
 BuildRoot:      %{_tmppath}/%{name}-root
 
-ExclusiveArch:  x86_64 i386
+ExclusiveArch:  x86_64
 AutoReq:        no
 
 %description

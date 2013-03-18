@@ -33,8 +33,7 @@ use constant SEND_RETRY_MAX => 4;
 
 sub connection_keepalive_time {
     my ($keepalive_time) = @_;
-    my $randomized_time = $keepalive_time + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
-    $randomized_time > 0 ? $randomized_time : 0;
+    $keepalive_time + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
 }
 
 sub new {
@@ -89,6 +88,7 @@ sub execute {
     my $pending_packed;
     my $continuous_line;
     my $disconnected_primary = 0;
+    my $expiration_enable = $keepalive_time != CONNECTION_KEEPALIVE_INFINITY;
 
     while(not $check_terminated->()) {
         # at here, connection initialized (after retry wait if required)
@@ -117,11 +117,16 @@ sub execute {
         # succeed to connect. set keepalive disconnect time
         my $connecting = $secondary || $primary;
 
-        my $use_expired = $keepalive_time != CONNECTION_KEEPALIVE_INFINITY;
-        my $expired = time + connection_keepalive_time($keepalive_time) if $use_expired;
+        my $expired = time + connection_keepalive_time($keepalive_time) if $expiration_enable;
         $reconnect_wait = RECONNECT_WAIT_MIN;
 
         while(not $check_reconnect->()) {
+            # connection keepalive expired
+            if ($expiration_enable and time > $expired) {
+                infof "connection keepalive expired.";
+                last;
+            }
+
             # ping message (if enabled)
             my $ping_packed = undef;
             if ($self->{ping_message} and time >= $last_ping_message + $self->{ping_message}->{interval}) {
@@ -154,12 +159,6 @@ sub execute {
             my $written = $self->send($sock, $pending_packed);
             unless ($written) { # failed to write (socket error).
                 $disconnected_primary = 1 unless $secondary;
-                last;
-            }
-
-            # connection keepalive expired
-            if ($use_expired and time > $expired) {
-                infof "connection keepalive expired.";
                 last;
             }
 
