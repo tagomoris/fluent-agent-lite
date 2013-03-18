@@ -21,7 +21,8 @@ use constant READ_WAIT => 0.1; # 0.1sec
 
 use constant SOCKET_TIMEOUT => 5; # 5sec
 
-use constant CONNECTION_KEEPALIVE => 1800; # 30min
+use constant CONNECTION_KEEPALIVE_INFINITY => 0;
+use constant CONNECTION_KEEPALIVE_TIME => 1800; # 30min
 use constant CONNECTION_KEEPALIVE_MARGIN_MAX => 30; # max 30sec
 
 use constant RECONNECT_WAIT_MIN => 0.5;  # 0.5sec
@@ -31,7 +32,9 @@ use constant RECONNECT_WAIT_INCR_RATE => 1.5;
 use constant SEND_RETRY_MAX => 4;
 
 sub connection_keepalive_time {
-    CONNECTION_KEEPALIVE + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
+    my ($keepalive_time) = @_;
+    my $randomized_time = $keepalive_time + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
+    $randomized_time > 0 ? $randomized_time : 0;
 }
 
 sub new {
@@ -46,6 +49,7 @@ sub new {
         buffer_size => $configuration->{buffer_size},
         ping_message => $configuration->{ping_message},
         drain_log_tag => $configuration->{drain_log_tag},
+        keepalive_time => $configuration->{keepalive_time},
         output_format => $configuration->{output_format},
     };
 
@@ -76,6 +80,10 @@ sub execute {
     my $last_ping_message = time;
     if ($self->{ping_message}) {
         $last_ping_message = time - $self->{ping_message}->{interval} * 2;
+    }
+    my $keepalive_time = CONNECTION_KEEPALIVE_TIME;
+    if (defined $self->{keepalive_time}) {
+        $keepalive_time = $self->{keepalive_time};
     }
 
     my $pending_packed;
@@ -109,15 +117,11 @@ sub execute {
         # succeed to connect. set keepalive disconnect time
         my $connecting = $secondary || $primary;
 
-        my $expired = time + connection_keepalive_time();
+        my $use_expired = $keepalive_time != CONNECTION_KEEPALIVE_INFINITY;
+        my $expired = time + connection_keepalive_time($keepalive_time) if $use_expired;
         $reconnect_wait = RECONNECT_WAIT_MIN;
 
         while(not $check_reconnect->()) {
-            if (time > $expired) { # connection keepalive expired
-                infof "connection keepalive expired.";
-                last;
-            }
-
             # ping message (if enabled)
             my $ping_packed = undef;
             if ($self->{ping_message} and time >= $last_ping_message + $self->{ping_message}->{interval}) {
@@ -150,6 +154,12 @@ sub execute {
             my $written = $self->send($sock, $pending_packed);
             unless ($written) { # failed to write (socket error).
                 $disconnected_primary = 1 unless $secondary;
+                last;
+            }
+
+            # connection keepalive expired
+            if ($use_expired and time > $expired) {
+                infof "connection keepalive expired.";
                 last;
             }
 
