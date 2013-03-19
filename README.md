@@ -10,7 +10,7 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ### VERSION
 
-0.6
+0.7
 
 ## INSTALL
 
@@ -98,7 +98,7 @@ Tag name of drain\_log (messages count per drain/send to server), which is emitt
 
 ### KEEPALIVE_TIME
 
-Connection keepalive time in seconds. 0 means infinity (Default: 1800)
+Connection keepalive time in seconds. 0 means infinity (Default: 1800, minimum: 120)
 
 ### LOG_PATH
 

@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.6
+%define version 0.7
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
+* Tue Mar 19 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
+- add i386 support for specs
+- add keepalive time option
+- fix to remove .pid file when stop
 * Wed Aug 29 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
 - add ping_message options
 * Wed Mar 21 2012 TAGOMORI Satoshi <tagomoris@gmail.com>
