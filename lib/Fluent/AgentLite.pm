@@ -21,7 +21,8 @@ use constant READ_WAIT => 0.1; # 0.1sec
 
 use constant SOCKET_TIMEOUT => 5; # 5sec
 
-use constant CONNECTION_KEEPALIVE => 1800; # 30min
+use constant CONNECTION_KEEPALIVE_INFINITY => 0;
+use constant CONNECTION_KEEPALIVE_TIME => 1800; # 30min
 use constant CONNECTION_KEEPALIVE_MARGIN_MAX => 30; # max 30sec
 
 use constant RECONNECT_WAIT_MIN => 0.5;  # 0.5sec
@@ -31,7 +32,8 @@ use constant RECONNECT_WAIT_INCR_RATE => 1.5;
 use constant SEND_RETRY_MAX => 4;
 
 sub connection_keepalive_time {
-    CONNECTION_KEEPALIVE + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
+    my ($keepalive_time) = @_;
+    $keepalive_time + int(CONNECTION_KEEPALIVE_MARGIN_MAX * 2 * rand()) - CONNECTION_KEEPALIVE_MARGIN_MAX;
 }
 
 sub new {
@@ -46,6 +48,7 @@ sub new {
         buffer_size => $configuration->{buffer_size},
         ping_message => $configuration->{ping_message},
         drain_log_tag => $configuration->{drain_log_tag},
+        keepalive_time => $configuration->{keepalive_time},
         output_format => $configuration->{output_format},
     };
 
@@ -77,10 +80,15 @@ sub execute {
     if ($self->{ping_message}) {
         $last_ping_message = time - $self->{ping_message}->{interval} * 2;
     }
+    my $keepalive_time = CONNECTION_KEEPALIVE_TIME;
+    if (defined $self->{keepalive_time}) {
+        $keepalive_time = $self->{keepalive_time};
+    }
 
     my $pending_packed;
     my $continuous_line;
     my $disconnected_primary = 0;
+    my $expiration_enable = $keepalive_time != CONNECTION_KEEPALIVE_INFINITY;
 
     while(not $check_terminated->()) {
         # at here, connection initialized (after retry wait if required)
@@ -109,11 +117,12 @@ sub execute {
         # succeed to connect. set keepalive disconnect time
         my $connecting = $secondary || $primary;
 
-        my $expired = time + connection_keepalive_time();
+        my $expired = time + connection_keepalive_time($keepalive_time) if $expiration_enable;
         $reconnect_wait = RECONNECT_WAIT_MIN;
 
         while(not $check_reconnect->()) {
-            if (time > $expired) { # connection keepalive expired
+            # connection keepalive expired
+            if ($expiration_enable and time > $expired) {
                 infof "connection keepalive expired.";
                 last;
             }
