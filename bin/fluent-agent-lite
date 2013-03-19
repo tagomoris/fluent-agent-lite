@@ -55,7 +55,7 @@ Options:
                           (see also: fluent-plugin-ping-message)
      -S SECONDS         ping message interval seconds (DEFAULT: 60)
      -d DRAIN_LOG_TAG   emits drain log to fluentd: messages per drain/send (DEFAULT: not to emits)
-     -k KEEPALIVE_TIME  connection keepalive time in seconds. 0 means infinity (DEFAULT: 1800)
+     -k KEEPALIVE_TIME  connection keepalive time in seconds. 0 means infinity (DEFAULT: 1800, minimum: 120)
      -j                 use JSON for message structure in transfering (highly experimental)
      -v                 output logs of level debug and info (DEFAULT: warn/crit only)
      -h                 print this message

@@ -23,6 +23,7 @@ use constant SOCKET_TIMEOUT => 5; # 5sec
 
 use constant CONNECTION_KEEPALIVE_INFINITY => 0;
 use constant CONNECTION_KEEPALIVE_TIME => 1800; # 30min
+use constant CONNECTION_KEEPALIVE_MIN => 120; # min 2min
 use constant CONNECTION_KEEPALIVE_MARGIN_MAX => 30; # max 30sec
 
 use constant RECONNECT_WAIT_MIN => 0.5;  # 0.5sec
@@ -83,6 +84,10 @@ sub execute {
     my $keepalive_time = CONNECTION_KEEPALIVE_TIME;
     if (defined $self->{keepalive_time}) {
         $keepalive_time = $self->{keepalive_time};
+        if ($keepalive_time < CONNECTION_KEEPALIVE_MIN and $keepalive_time != CONNECTION_KEEPALIVE_INFINITY) {
+            warnf 'Keepalive time setting is too short. Set minimum value %s', CONNECTION_KEEPALIVE_MIN;
+            $keepalive_time = CONNECTION_KEEPALIVE_MIN;
+        }
     }
 
     my $pending_packed;
