@@ -177,7 +177,7 @@ sub build_tail_command {
     if ($sleep_interval) {
         push @command, '-s', $sleep_interval;
     }
-    push @command, '-F', $input_file;
+    push @command, '-n', '0', '-F', $input_file;
     infof 'tail command line: %s', \@command;
     return @command;
 }
