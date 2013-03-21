@@ -213,6 +213,11 @@ function prepare_build {
             OPTIONS_PART=$OPTIONS_PART" -v"
         fi
     fi
+    if [ "x"$FORCE_START != "x" ]; then
+        if [ $FORCE_START != "no" -a $FORCE_START != "0" -a $FORCE_START != "false" ]; then
+            OPTIONS_PART=$OPTIONS_PART" -F"
+        fi
+    fi
     PREPARE_GLOBAL="x"
 }
 
