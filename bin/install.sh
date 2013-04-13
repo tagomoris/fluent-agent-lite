@@ -12,6 +12,7 @@ cd $(dirname $0)"/../"
 
 SOURCEDIR=$(pwd)
 
+# PREFIX is to override system root. (for packaging)
 if [ "x"$PREFIX = "x" ]; then
     PREFIX=
 fi
@@ -26,14 +27,18 @@ if [ -d $INSTALLDIR -a "x"$CLEAN = "xy" ]; then
 fi
 
 mkdir -p $INSTALLDIR
-
-cp -rp bin lib Makefile.PL $INSTALLDIR
+cp -rp bin lib Makefile.PL cpanfile $INSTALLDIR
 
 cd $INSTALLDIR
 
-export PERL_CPANM_OPT="--local-lib=~/perl5"
-$PERL_PATH $SOURCEDIR/bin/cpanm -n -lextlib inc::Module::Install
-$PERL_PATH $SOURCEDIR/bin/cpanm -n -lextlib --reinstall --installdeps .
+WGET_PATH=$(which wget)
+if [ "x"$WGET_PATH = "x" ]; then
+    curl -s -L http://cpanmin.us/ | $PERL_PATH - -Lextlib Carton
+else
+    wget -q -O - http://cpanmin.us/ | $PERL_PATH - -Lextlib Carton
+fi
+
+$PERL_PATH $INSTALLDIR/extlib/bin/carton install
 
 cd $SOURCEDIR
 
