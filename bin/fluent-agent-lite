@@ -1,4 +1,7 @@
 #!/bin/bash
 
 cd $(dirname $0)"/../"
+current=$(pwd)
+export PATH=$current/extlib/bin:$PATH
+export PERL5OPT=-Iextlib/lib/perl5
 exec extlib/bin/carton exec -- bin/fluent-agent-lite.pl "$@"

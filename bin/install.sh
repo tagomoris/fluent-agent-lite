@@ -31,14 +31,27 @@ cp -rp bin lib Makefile.PL cpanfile $INSTALLDIR
 
 cd $INSTALLDIR
 
+mkdir tmp
+
 WGET_PATH=$(which wget)
 if [ "x"$WGET_PATH = "x" ]; then
-    curl -s -L http://cpanmin.us/ | $PERL_PATH - -Lextlib Carton
+    curl -s -L -O tmp/cpanm http://cpanmin.us/
 else
-    wget -q -O - http://cpanmin.us/ | $PERL_PATH - -Lextlib Carton
+    wget -q -O tmp/cpanm http://cpanmin.us/
 fi
 
-$PERL_PATH $INSTALLDIR/extlib/bin/carton install
+TMP_PERL_CPANM_OPTS=
+if $PERL_PATH -e 'require Module::CoreList;' 2>/dev/null; then
+    # do nothing (perl is any version with Module::CoreList)
+else
+    cat tmp/cpanm | $PERL_PATH - -l tmp/module-corelist Module::CoreList
+    TMP_PERL_CPANM_OPTS="-I tmp/module-corelist/lib/perl5"
+fi
+cat tmp/cpanm | $PERL_PATH $TMP_PERL_CPANM_OPTS -- - -Lextlib Module::CoreList App::cpanminus Carton
+
+export PATH=$INSTALLDIR/extlib/bin:$PATH
+export PERL5OPT=-Iextlib/lib/perl5
+extlib/bin/carton install
 
 cd $SOURCEDIR
 
