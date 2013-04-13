@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.7
+%define version 0.8
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
+* Sat Apr 13 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
+- fix not to read lines already exists just after start-up
+- CPANize
 * Tue Mar 19 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
 - add i386 support for specs
 - add keepalive time option
