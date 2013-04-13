@@ -3,11 +3,13 @@
 pkgroot=$(dirname $0)"/../"
 
 if [ -d $pkgroot/extlib ]; then
+    # fluent-agent-lite installed by bin/install.sh
     cd $pkgroot
     current=$(pwd)
     export PATH=$current/extlib/bin:$PATH
     export PERL5OPT=-Iextlib/lib/perl5
-    exec extlib/bin/carton exec -- bin/fluent-agent-lite.pl "$@"
+    exec extlib/bin/carton exec -- perl -Iextlib/lib/perl5 bin/fluent-agent-lite.pl "$@"
 else
-    exec ./fluent-agent-lite.pl "$@"
+    # fluent-agent-lite installed from CPAN
+    exec fluent-agent-lite.pl "$@"
 fi
