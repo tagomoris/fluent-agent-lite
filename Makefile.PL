@@ -12,6 +12,7 @@ perl_version '5.008001';
 cpanfile;
 
 install_script 'bin/fluent-agent-lite';
+install_script 'bin/fluent-agent-lite.pl';
 
 auto_set_repository;
 
