@@ -48,7 +48,8 @@ else
     cat tmp/cpanm | $PERL_PATH - -l tmp/module-corelist Module::CoreList
     TMP_PERL_CPANM_OPTS="-I tmp/module-corelist/lib/perl5"
 fi
-cat tmp/cpanm | $PERL_PATH $TMP_PERL_CPANM_OPTS -- - -Lextlib Module::CoreList App::cpanminus Carton
+cat tmp/cpanm | $PERL_PATH $TMP_PERL_CPANM_OPTS -- - -n -Lextlib Module::CoreList App::cpanminus Carton
+rm -rf tmp
 
 export PATH=$INSTALLDIR/extlib/bin:$PATH
 export PERL5OPT=-Iextlib/lib/perl5
