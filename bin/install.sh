@@ -43,6 +43,7 @@ fi
 TMP_PERL_CPANM_OPTS=
 if $PERL_PATH -e 'require Module::CoreList;' 2>/dev/null; then
     # do nothing (perl is any version with Module::CoreList)
+    TMP_PERL_CPANM_OPTS=""
 else
     cat tmp/cpanm | $PERL_PATH - -l tmp/module-corelist Module::CoreList
     TMP_PERL_CPANM_OPTS="-I tmp/module-corelist/lib/perl5"
