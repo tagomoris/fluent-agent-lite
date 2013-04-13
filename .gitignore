@@ -4,5 +4,6 @@ Makefile
 blib/
 inc/
 extlib/
+local/
 pm_to_blib
 *~
