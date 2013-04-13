@@ -36,6 +36,9 @@ Log transfer agent service over fluentd protocol.
 %install
 rm -rf $RPM_BUILD_ROOT
 env PREFIX=$RPM_BUILD_ROOT PERL_PATH=%{build_perl_path} bin/install.sh
+# install -m 644 $RPM_SOURCE_DIR/fluent-agent-lite.conf $RPM_BUILD_ROOT/etc/fluent-agent-lite.conf
+# install -m 644 $RPM_SOURCE_DIR/fluent-agent.servers.primary $RPM_BUILD_ROOT/etc/fluent-agent.servers.primary
+# install -m 644 $RPM_SOURCE_DIR/fluent-agent.servers.secondary $RPM_BUILD_ROOT/etc/fluent-agent.servers.secondary
 
 %clean
 rm -rf $RPM_BUILD_ROOT
