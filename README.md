@@ -37,7 +37,7 @@ On each host, do steps below.
 
 ## Configuration
 
-All of configurations are written in configuration shell-script file (/etc/fleunt-agent-lite.conf). Configurable values are below:
+All of configurations are written in configuration shell-script file (/etc/fluent-agent-lite.conf). Configurable values are below:
 
 ### LOGS
 
