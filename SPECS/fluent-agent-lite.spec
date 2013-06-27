@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.8
+%define version 0.9
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
+* Thu Jun 27 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
+- add configuration pattern for log files
+- fix to check input log files
 * Sat Apr 13 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
 - fix not to read lines already exists just after start-up
 - CPANize
