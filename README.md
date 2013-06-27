@@ -10,7 +10,7 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ### VERSION
 
-0.7
+0.9 http://tagomoris.github.io/tarballs/fluent-agent-lite.v0.9.tar.gz
 
 ## INSTALL
 
@@ -47,6 +47,14 @@ Pairs of tag and file, such as:
     www     /var/log/nginx/www_access.log
     app     /var/log/apache2/app_access.log
     EOF
+
+Or, you can use this syntax:
+
+    LOGS=$(cat /etc/fluent-agent.logs)
+    
+    ## in fluent-agent.logs
+    www  /var/log/nginx/www_access.log
+    app  /var/log/apache2/app_access.log
 
 ### TAG_PREFIX
 
