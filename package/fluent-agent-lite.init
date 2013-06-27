@@ -39,7 +39,11 @@ start() {
         return 1;
     fi
 
-    lines=$(echo "$LOGS" | grep -v '^#' | wc -l | awk '{print $1;}')
+    lines=$(echo "$LOGS" | grep -v '^#' | grep -v '^$' | wc -l | awk '{print $1;}')
+    if [ x"$LOGS" = "x" -o $lines -lt 1 ]; then
+        echo "No input logfiles specified."
+        return 1;
+    fi
     for (( i = 0; i < $lines; i++ )); do
         COMMANDLINE=$(build_command_line $i)
         $COMMANDLINE &
