@@ -28,6 +28,8 @@ To build your rpm package, do 5 steps below.
 
 To install each RHEL/CentOS host, use yum server, or copy and rpm -i on each host.
 
+NOTE: `yum install perl-devel` and `QA_RPATHS=$[0x001] rpmbuild -ba` may help you if `rpmbuild` fails on your build environment.
+
 ### Other Linux or Unix-like OS
 
 On each host, do steps below.
