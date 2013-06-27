@@ -31,9 +31,10 @@ cp -rp bin lib Makefile.PL $INSTALLDIR
 
 cd $INSTALLDIR
 
-export PERL_CPANM_OPT="--local-lib=~/perl5"
-$PERL_PATH $SOURCEDIR/bin/cpanm -n -lextlib inc::Module::Install
-$PERL_PATH $SOURCEDIR/bin/cpanm -n -lextlib --reinstall --installdeps .
+curl -s -L http://xrl.us/cpanm > $INSTALLDIR/bin/cpanm
+chmod +x $INSTALLDIR/bin/cpanm
+$PERL_PATH $INSTALLDIR/bin/cpanm -n -lextlib inc::Module::Install
+$PERL_PATH $INSTALLDIR/bin/cpanm -n -lextlib --reinstall --installdeps .
 
 cd $SOURCEDIR
 
