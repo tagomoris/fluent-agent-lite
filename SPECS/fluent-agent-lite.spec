@@ -15,7 +15,7 @@ Summary:        Log transfer agent service over fluentd protocol
 Group:          Applications/System
 License:        Apache Software License v2
 URL:            https://github.com/tagomoris/fluent-agent-lite
-# Source0:        https://github.com/downloads/tagomoris/fluent-agent-lite/fluent-agent-lite.v%{version}.tar.gz
+# Source0:        http://tagomoris.github.io/tarballs/fluent-agent-lite.v%{version}.tar.gz
 Source0:        fluent-agent-lite.v%{version}.tar.gz
 # Source1:        fluent-agent-lite.conf
 # Source2:        fluent-agent.servers.primary
