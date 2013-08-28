@@ -216,7 +216,7 @@ sub main {
         close(STDIN) or die "failed to close STDIN";
         ($tailfd, $tailpid) = open_tail();
     } else {
-        die 'cannot find input file %s', $input_file;
+        die 'cannot find input file ', $input_file;
     }
 
     my $agent = Fluent::AgentLite->new(
