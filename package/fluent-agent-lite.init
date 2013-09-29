@@ -44,6 +44,17 @@ start() {
         echo "No input logfiles specified."
         return 1;
     fi
+    if [ "x"$FORCE_START = "x" -o "x"$FORCE_START = "xno" -o "x"$FORCE_START = "x0" -o "x"$FORCE_START = "xfalse" ]; then
+        for (( i = 0; i < $lines; i++ )); do
+            lineno=$((i + 1))
+            line=$(echo "$LOGS" | grep -v '^#' | tail -n $lineno | head -n 1)
+            path=$(echo $line | awk '{print $2;}')
+            if [ ! -r "$path" ]; then
+                echo "$path does not exist or is not readable."
+                return 1;
+            fi
+        done
+    fi
     for (( i = 0; i < $lines; i++ )); do
         COMMANDLINE=$(build_command_line $i)
         $COMMANDLINE &
