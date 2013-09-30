@@ -34,7 +34,7 @@ my $checker_reconnect = sub {
 
 use Getopt::Std qw//;
 my %commandline_options;
-Getopt::Std::getopts('f:p:s:b:n:t:i:l:P:S:d:k:jvh', \%commandline_options);
+Getopt::Std::getopts('f:p:s:b:n:t:i:l:P:S:d:k:jvFh', \%commandline_options);
 
 sub HELP_MESSAGE {
     print <<EOF;
@@ -58,6 +58,7 @@ Options:
      -k KEEPALIVE_TIME  connection keepalive time in seconds. 0 means infinity (DEFAULT: 1800, minimum: 120)
      -j                 use JSON for message structure in transfering (highly experimental)
      -v                 output logs of level debug and info (DEFAULT: warn/crit only)
+     -F                 force start even if input file is not found
      -h                 print this message
 EOF
     exit 0;
@@ -161,6 +162,11 @@ if ($commandline_options{j}) {
     $output_format = 'json';
 }
 
+my $force_start = undef;
+if ($commandline_options{F}) {
+    $force_start = 1;
+}
+
 open(STDOUT, ">> $logpath") or die "failed to reopen STDOUT to $logpath";
 open(STDERR, ">> $logpath") or die "failed to reopen STDERR to $logpath";
 
@@ -212,7 +218,7 @@ sub main {
     my ($tailfd, $tailpid);
     if ( $input_file eq "-" ) {
         ($tailfd, $tailpid) = open_stdin();
-    } elsif ( -f $input_file ) {
+    } elsif ( -f $input_file || $force_start ) {
         close(STDIN) or die "failed to close STDIN";
         ($tailfd, $tailpid) = open_tail();
     } else {
