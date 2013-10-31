@@ -29,7 +29,7 @@ AutoReq:        no
 Log transfer agent service over fluentd protocol.
 
 %prep
-%setup -q -n fluent-agent-lite
+%setup -q -n fluent-agent-lite-v%{version}
 
 %build
 
