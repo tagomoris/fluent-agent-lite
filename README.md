@@ -14,9 +14,13 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ## PACKAGING TARBALL
 
-    mkdir -p tmp/archive/fluent-agent-lite-vN.N
-    (cd tmp/archive/fluent-agent-lite ; git clone ../../.git ./ ; rm -rf .git .shipit .gitignore)
-    (cd tmp/archive; tar czf fluent-agent-lite.vN.N.tar.gz fluent-agent-lite-vN.N)
+To get tarball of latest tagged version:
+
+    make -f Makefile.package
+
+Got tarball on `tmp/archive/fluent-agent-lite.vX.Y.tar.gz`.
+
+To do this, versions (tags) MUST be v1.0 not but v0.10 for sorting order...
 
 ## INSTALL
 

@@ -1,0 +1,7 @@
+version = $(shell git tag | tail -1)
+
+archive:
+	mkdir -p tmp/archive
+	(cd tmp/archive ; git clone ../../.git fluent-agent-lite-$(version) ; cd fluent-agent-lite-$(version) ; rm -rf .git .shipit)
+	(cd tmp/archive ; tar czf fluent-agent-lite-$(version).tar.gz fluent-agent-lite-$(version))
+
