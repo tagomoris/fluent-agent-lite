@@ -12,6 +12,12 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 0.9 http://tagomoris.github.io/tarballs/fluent-agent-lite.v0.9.tar.gz
 
+## PACKAGING TARBALL
+
+    mkdir -p tmp/archive/fluent-agent-lite-vN.N
+    (cd tmp/archive/fluent-agent-lite ; git clone ../../.git ./ ; rm -rf .git .shipit .gitignore)
+    (cd tmp/archive; tar czf fluent-agent-lite.vN.N.tar.gz fluent-agent-lite-vN.N)
+
 ## INSTALL
 
 On RHEL/CentOS, you can use .spec file to build rpm with your customized default config file.
