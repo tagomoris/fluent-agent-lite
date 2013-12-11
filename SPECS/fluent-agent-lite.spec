@@ -1,5 +1,5 @@
 %define name fluent-agent-lite
-%define version 0.9
+%define version 1.0
 %define prefix /usr/local
 %define build_perl_path /usr/bin/perl
 
@@ -15,8 +15,8 @@ Summary:        Log transfer agent service over fluentd protocol
 Group:          Applications/System
 License:        Apache Software License v2
 URL:            https://github.com/tagomoris/fluent-agent-lite
-# Source0:        http://tagomoris.github.io/tarballs/fluent-agent-lite.v%{version}.tar.gz
-Source0:        fluent-agent-lite.v%{version}.tar.gz
+# Source0:        (tarball from) https://github.com/tagomoris/fluent-agent-lite/releases/tag/v%{version}
+Source0:        fluent-agent-lite.%{version}.tar.gz
 # Source1:        fluent-agent-lite.conf
 # Source2:        fluent-agent.servers.primary
 # Source3:        fluent-agent.servers.secondary
@@ -29,7 +29,7 @@ AutoReq:        no
 Log transfer agent service over fluentd protocol.
 
 %prep
-%setup -q -n fluent-agent-lite-v%{version}
+%setup -q -n fluent-agent-lite-%{version}
 
 %build
 
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 # %doc README
 
 %changelog
+* Wed Dec 11 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
+- add force start option
+- change archiving
 * Thu Jun 27 2013 TAGOMORI Satoshi <tagomoris@gmail.com>
 - add configuration pattern for log files
 - fix to check input log files
