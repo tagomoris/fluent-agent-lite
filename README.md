@@ -10,7 +10,7 @@ This agent reads specified files, and sends each lines to fluentd servers. One l
 
 ### VERSION
 
-1.0 http://tagomoris.github.io/tarballs/fluent-agent-lite.v1.0.tar.gz
+1.0 https://github.com/tagomoris/fluent-agent-lite/releases/tag/v1.0
 
 ## PACKAGING TARBALL
 

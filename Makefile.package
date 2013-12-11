@@ -1,4 +1,4 @@
-version = $(shell git tag | tail -1)
+version = $(shell git tag | tail -1 | sed -e 's/^v//')
 
 archive:
 	rm -rf tmp/archive/fluent-agent-lite-$(version)
