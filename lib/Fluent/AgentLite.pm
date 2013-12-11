@@ -15,7 +15,7 @@ use Log::Minimal;
 use IO::Socket::INET;
 use Data::MessagePack;
 
-our $VERSION = '0.9';
+our $VERSION = '1.0';
 
 use constant READ_WAIT => 0.1; # 0.1sec
 

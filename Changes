@@ -1,5 +1,9 @@
 revision history for Perl module Fluent::AgentLite
 
+{{$NEXT}}
+   - add force start option (w/o reading log file)
+   - archive file maintenance
+
 0.9 Thu Jun 27 15:43:37 JST 2013
    - maintenance update (update of package scripts)
 
