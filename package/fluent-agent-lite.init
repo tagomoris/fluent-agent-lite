@@ -134,6 +134,8 @@ status() {
     if [ $RETVAL = 0 ]; then
         if [ "x"$working = "x0" ]; then
             echo "not running, ok"
+            # ref: http://refspecs.linuxbase.org/LSB_3.1.1/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
+            RETVAL=3
         else
             echo "ok."
         fi
