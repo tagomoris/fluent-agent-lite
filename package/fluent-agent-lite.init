@@ -134,6 +134,7 @@ status() {
     if [ $RETVAL = 0 ]; then
         if [ "x"$working = "x0" ]; then
             echo "not running, ok"
+            RETVAL=3
         else
             echo "ok."
         fi
