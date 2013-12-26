@@ -18,7 +18,7 @@ To get tarball of latest tagged version:
 
     make -f Makefile.package
 
-Got tarball on `tmp/archive/fluent-agent-lite.vX.Y.tar.gz`.
+Got tarball on `tmp/archive/fluent-agent-lite-vX.Y.tar.gz`.
 
 To do this, versions (tags) MUST be v1.0 not but v0.10 for sorting order...
 

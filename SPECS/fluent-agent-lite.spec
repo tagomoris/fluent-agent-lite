@@ -16,7 +16,7 @@ Group:          Applications/System
 License:        Apache Software License v2
 URL:            https://github.com/tagomoris/fluent-agent-lite
 # Source0:        (tarball from) https://github.com/tagomoris/fluent-agent-lite/releases/tag/v%{version}
-Source0:        fluent-agent-lite.%{version}.tar.gz
+Source0:        fluent-agent-lite-%{version}.tar.gz
 # Source1:        fluent-agent-lite.conf
 # Source2:        fluent-agent.servers.primary
 # Source3:        fluent-agent.servers.secondary
