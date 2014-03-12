@@ -28,6 +28,7 @@ use constant CONNECTION_KEEPALIVE_MARGIN_MAX => 30; # max 30sec
 
 use constant RECONNECT_WAIT_MIN => 0.5;  # 0.5sec
 use constant RECONNECT_WAIT_MAX => 3600; # 60min
+use constant RECONNECT_WAIT_INCR_RATE_MIN => 1.0;
 use constant RECONNECT_WAIT_INCR_RATE => 1.5;
 
 use constant SEND_RETRY_MAX => 4;
@@ -50,6 +51,8 @@ sub new {
         ping_message => $configuration->{ping_message},
         drain_log_tag => $configuration->{drain_log_tag},
         keepalive_time => $configuration->{keepalive_time},
+        reconnect_wait_incr_rate => $configuration->{reconnect_wait_incr_rate},
+        reconnect_wait_max => $configuration->{reconnect_wait_max},
         output_format => $configuration->{output_format},
     };
 
@@ -76,6 +79,22 @@ sub execute {
     my $packer = Data::MessagePack->new();
 
     my $reconnect_wait = RECONNECT_WAIT_MIN;
+    my $reconnect_wait_max = RECONNECT_WAIT_MAX;
+    if (defined $self->{reconnect_wait_max}) {
+        $reconnect_wait_max = $self->{reconnect_wait_max};
+        if ($reconnect_wait_max < RECONNECT_WAIT_MIN) {
+            warnf 'Reconnect wait max is too short. Set minimum value %s', RECONNECT_WAIT_MIN;
+            $reconnect_wait_max = RECONNECT_WAIT_MIN;
+        }
+    }
+    my $reconnect_wait_incr_rate = RECONNECT_WAIT_INCR_RATE;
+    if (defined $self->{reconnect_wait_incr_rate}) {
+        $reconnect_wait_incr_rate = $self->{reconnect_wait_incr_rate};
+        if ($reconnect_wait_incr_rate < RECONNECT_WAIT_INCR_RATE_MIN) {
+            warnf 'Reconnect wait incr rate is too small. Set minimum value %s', RECONNECT_WAIT_INCR_RATE_MIN;
+            $reconnect_wait_incr_rate = RECONNECT_WAIT_INCR_RATE_MIN;
+        }
+    }
 
     my $last_ping_message = time;
     if ($self->{ping_message}) {
@@ -114,8 +133,8 @@ sub execute {
             warnf 'waiting %s seconds to reconnect', $reconnect_wait;
 
             Time::HiRes::sleep($reconnect_wait);
-            $reconnect_wait *= RECONNECT_WAIT_INCR_RATE;
-            $reconnect_wait = RECONNECT_WAIT_MAX if $reconnect_wait > RECONNECT_WAIT_MAX;
+            $reconnect_wait *= $reconnect_wait_incr_rate;
+            $reconnect_wait = $reconnect_wait_max if $reconnect_wait > $reconnect_wait_max;
             next;
         }
 

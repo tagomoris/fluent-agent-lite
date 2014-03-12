@@ -120,6 +120,14 @@ Tag name of drain\_log (messages count per drain/send to server), which is emitt
 
 Connection keepalive time in seconds. 0 means infinity (Default: 1800, minimum: 120)
 
+### RECONNECT_WAIT_MAX
+
+The maximum wait time for TCP socket reconnection in seconds. (Default: 3600, minimum: 0.5)
+
+### RECONNECT_WAIT_INCR_RATE
+
+The rate to increment the reconnect time. `next_wait_time = current_wait_time * rate` (Default: 1.5, minimum: 1.0)
+
 ### LOG_PATH
 
 Log file path for 'fluent-agent-lite' (Default: /tmp/fluent-agent.log).
