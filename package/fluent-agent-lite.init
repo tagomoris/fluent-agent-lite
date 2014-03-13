@@ -218,6 +218,12 @@ function prepare_build {
     if [ "x"$KEEPALIVE_TIME != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -k "$KEEPALIVE_TIME
     fi
+    if [ "x"$RECONNECT_WAIT_MAX != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -w "$RECONNECT_WAIT_MAX
+    fi
+    if [ "x"$RECONNECT_WAIT_INCR_RATE != "x" ]; then
+        OPTIONS_PART=$OPTIONS_PART" -r "$RECONNECT_WAIT_INCR_RATE
+    fi
     if [ "x"$LOG_PATH != "x" ]; then
         OPTIONS_PART=$OPTIONS_PART" -l "$LOG_PATH
     fi
