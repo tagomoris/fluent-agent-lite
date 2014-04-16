@@ -1,0 +1,257 @@
+#!perl
+
+use strict;
+use warnings;
+
+use Getopt::Long qw(:config posix_default no_ignore_case no_ignore_case_always);
+use Pod::Usage;
+
+use Data::Validator;
+use Log::Minimal env_debug => 'SFAL_DEBUG';
+use Proclet;
+
+my $PROG = substr($0, rindex($0, '/') + 1);
+
+my $Debug = 0;
+
+MAIN: {
+    my %arg;
+    GetOptions(
+        \%arg,
+        'agent-path|a=s',
+        'tag-prefix=s',
+        'f|field-name=s',
+        'primary-server=s',
+        'secondary-server=s',
+        'p|primary-server-list=s',
+        's|secondary-server-list=s',
+        'b|raed-buffer-size=i',
+        'n|process-nice=i',
+        't|tail-path=s',
+        'i|tail-interval=f',
+        'tag-file|T=s@',
+        'l|log-path=s',
+        'P|ping=s',
+        'S|ping-interval=i',
+        'd|drain-log-tag=s',
+        'k|keepalive-time=i',
+        'w|reconnect-wait-max=f',
+        'r|reconnect-wait-incr-rate=f',
+        'j|json',
+        'v|log-verbose',
+        'F|force',
+        'debug' => \$Debug,
+        'help|h|?' => sub { pod2usage(-verbose=>1) },
+    ) or pod2usage();
+
+    $ENV{SFAL_DEBUG} = 1 if $Debug;
+    debugf("arg: %s", ddf(\%arg));
+
+
+    my @opts_common;
+    for my $k (qw(f b n t i l P S d k w r)) {
+        push @opts_common, "-$k", $arg{$k} if exists $arg{$k};
+    }
+    for my $k (qw(f v F)) {
+        push @opts_common, "-$k" if exists $arg{$k};
+    }
+
+
+    my @opts_server = ();
+    if ($arg{'primary-server'}) {
+        push @opts_server, $arg{'primary-server'};
+        push @opts_server, $arg{'secondary-server'} if exists $arg{'secondary-server'};
+    } elsif ($arg{p}) {
+        for my $k (qw(p s)) {
+            push @opts_common, "-$k", $arg{$k} if exists $arg{$k};
+        }
+    } else {
+        pod2usage("Invalid option: requires -p or --primary-server");
+    }
+
+
+    my @opts_target_file = ();
+    my $tag_prefix = exists $arg{'tag-prefix'} ? $arg{'tag-prefix'}."." : "";
+    for my $tagfile (@{ $arg{'tag-file'} }) {
+        my($tag, $file) = split /=/, $tagfile, 2;
+        push @opts_target_file, ["${tag_prefix}${tag}", $file];
+    }
+    unless (@opts_target_file) {
+        pod2usage("Invalid option: requires --tag-file TAG=TARGET_FILE");
+    }
+
+    my $agent_path = exists $arg{'agent-path'} ? $arg{'agent-path'} : 'fluent-agent-lite';
+
+
+    debugf("agent path: %s", $agent_path);
+    debugf("common: %s", join(' ', @opts_common));
+    debugf("target_file: %s", ddf(\@opts_target_file));
+    debugf("server: %s", join(' ', @opts_server));
+
+    my $proclet = Proclet->new(
+        color => 1,
+    );
+
+    for my $target_file (@opts_target_file) {
+        my @args = ($agent_path, @opts_common, @$target_file, @opts_server);
+        $proclet->service(
+            code => sub {
+                exec { $args[0] } @args;
+            },
+        );
+    }
+
+    $proclet->run;
+    exit 0;
+}
+
+__END__
+
+=head1 NAME
+
+B<start-fluent-agent-lite> - fluent-agent-lite launcher script
+
+=head1 SYNOPSIS
+
+B<start-fluent-agent-lite> --primary-server HOST:PORT [--secondary-server HOST:PORT] -T TAG=FILE [-T TAG=FILE ...] [OTHER OPTIONS]
+
+B<start-fluent-agent-lite> -p SERVER_LIST_FILE [-s SERVER_LIST_FILE] -T TAG=FILE [-T TAG=FILE ...] [OTHER OPTIONS]
+
+B<start-fluent-agent-lite> B<-h> | B<--help> | B<-?>
+
+    $ start-fluent-agent-lite --primary-server 127.0.0.1 --tag-prefix service \
+        -T www=/var/log/nginx/www_access.log \
+        -T app=/var/log/apache2/app_access.log
+
+=head1 DESCRIPTION
+
+This script is launcher script for fluent-agent-lite.
+
+fluent-agent-lite can read from only one file, so we need to run several fluent-agent-lite(s) if read and transfer multiple files.
+
+start-fluent-agent-lite starts fluent-agent-lite(s) using L<Proclet> as many as target files (specified -T or --tag-file options)
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--agent-path> Str, B<-a> Str
+
+path of fluent-agent-lite (DEFAULT: fluent-agent-lite (search in $PATH))
+
+=item B<--tag-prefix> Str
+
+Prefix of each tags, specified in '--tag-file' option
+
+=item B<-f> Str, B<--field-name> Str
+
+fieldname of fluentd log message attribute (DEFAULT: message)
+
+=item B<--primary-server> SERVERNAME[:PORT] (Str)
+
+Fluentd server name and port (SERVERNAME:PORT), as primary server. 'fluent-agent-lite' try to connect to primary server at first, and if fails, then try to connect secondary server (if it specified).
+
+Default port is 24224 (if omitted).
+
+=item B<--secondary-server> SERVERNAME[:PORT] (Str)
+
+Secondary fluentd server name and port.
+
+=item B<-p> Str, B<--primary-server-list> Str
+
+primary servers list file (server[:port] per line, random selected one server)
+
+=item B<-s> Str, B<--secondary-server-list> Str
+
+secondary servers list file (server[:port] per line, random selected one server)
+
+=item B<-b> Int, B<--raed-buffer-size> Int
+
+log tailing buffer size (DEFAULT: 1MB)
+
+=item B<-n> Int, B<--process-nice> Int
+
+tail process nice (DEFAULT: 0)
+
+=item B<-t> Str, B<--tail-path> Str
+
+tail path (DEFAULT: /usr/bin/tail)
+
+=item B<-i> Num, B<--tail-interval> Num
+
+tail -F sleep interval (GNU tail ONLY, DEFAULT: tail default)
+
+=item B<--tag-file> TAG=TARGET_FILE, B<-T> TAG=TARGET_FILE
+
+Pairs of tag and target file.
+
+You can specify more than one this option.
+
+=item B<-l> Str, B<--log-path> Str
+
+log file path (DEFAULT: /tmp/fluent-agent.log)
+
+=item B<-P> TAG:DATA, B<--ping> TAG:DATA
+
+send a ping message per minute with specified TAG and DATA (DEFAULT: not to send)
+
+=item B<-S> Int, B<--ping-interval> Int
+
+ping message interval seconds (DEFAULT: 60)
+
+=item B<-d> Str, B<--drain-log-tag> Str
+
+emits drain log to fluentd: messages per drain/send (DEFAULT: not to emits)
+
+=item B<-k> Int, B<--keepalive-time> Int
+
+connection keepalive time in seconds. 0 means infinity (DEFAULT: 1800, minimum: 120)
+
+=item B<-w> Num, B<--reconnect-wait-max> Num
+
+the maximum wait time for TCP socket reconnection in seconds (DEFAULT: 3600, minimum: 0.5)
+
+=item B<-r> Num, B<--reconnect-wait-incr-rate> Num
+
+the rate to increment the reconnect time (DEFAULT: 1.5, minimum: 1.0)
+
+=item B<-j>, B<--json>
+
+use JSON for message structure in transfering (highly experimental)
+
+=item B<-v>, B<--log-verbose>
+
+output logs of level debug and info (DEFAULT: warn/crit only)
+
+=item B<-F>, B<--force>
+
+force start even if input file is not found
+
+=item B<--debug>
+
+increase debug level of start-fluent-agent-lite
+-d -d more verbosely.
+
+=back
+
+=head1 SEE ALSO
+
+L<Fluent::AgentLite>, L<Proclet>
+
+=head1 AUTHOR
+
+HIROSE Masaaki
+
+=cut
+
+# for Emacsen
+# Local Variables:
+# mode: cperl
+# cperl-indent-level: 4
+# cperl-close-paren-offset: -4
+# cperl-indent-parens-as-block: t
+# indent-tabs-mode: nil
+# coding: utf-8
+# End:
+
+# vi: set ts=4 sw=4 sts=0 et ft=perl fenc=utf-8 :
