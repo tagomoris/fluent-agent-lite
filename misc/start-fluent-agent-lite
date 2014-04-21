@@ -19,6 +19,7 @@ MAIN: {
     GetOptions(
         \%arg,
         'agent-path|a=s',
+        'perl-path=s',
         'tag-prefix=s',
         'f|field-name=s',
         'primary-server=s',
@@ -80,10 +81,15 @@ MAIN: {
         pod2usage("Invalid option: requires --tag-file TAG=TARGET_FILE");
     }
 
-    my $agent_path = exists $arg{'agent-path'} ? $arg{'agent-path'} : 'fluent-agent-lite';
+    my $agent_path = exists $arg{'agent-path'} ? $arg{'agent-path'} : '/usr/local/fluent-agent-lite/bin/fluent-agent-lite';
+    if (! -f $agent_path) {
+        pod2usage("No such file: $agent_path");
+    }
 
+    my $perl_path = exists $arg{'perl-path'} ? $arg{'perl-path'} : 'perl';
 
     debugf("agent path: %s", $agent_path);
+    debugf("perl path: %s", $perl_path);
     debugf("common: %s", join(' ', @opts_common));
     debugf("target_file: %s", ddf(\@opts_target_file));
     debugf("server: %s", join(' ', @opts_server));
@@ -93,7 +99,7 @@ MAIN: {
     );
 
     for my $target_file (@opts_target_file) {
-        my @args = ($agent_path, @opts_common, @$target_file, @opts_server);
+        my @args = ($perl_path, $agent_path, @opts_common, @$target_file, @opts_server);
         $proclet->service(
             code => sub {
                 exec { $args[0] } @args;
