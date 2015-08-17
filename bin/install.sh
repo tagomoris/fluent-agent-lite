@@ -31,7 +31,7 @@ cp -rp bin lib Makefile.PL $INSTALLDIR
 
 cd $INSTALLDIR
 
-curl -s -L http://xrl.us/cpanm > $INSTALLDIR/bin/cpanm
+curl -s -L http://cpanmin.us > $INSTALLDIR/bin/cpanm
 chmod +x $INSTALLDIR/bin/cpanm
 $PERL_PATH $INSTALLDIR/bin/cpanm -n -lextlib inc::Module::Install
 $PERL_PATH $INSTALLDIR/bin/cpanm -n -lextlib --reinstall --installdeps .
