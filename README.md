@@ -28,13 +28,10 @@ On RHEL/CentOS, you can use .spec file to build rpm with your customized default
 
 ### RHEL/CentOS
 
-To build your rpm package, do 5 steps below.
+To build your rpm package, do 2 steps below.
 
-1. Download (newest version) tarball, and place it on SOURCES/ .
-2. Download package/fluent-agent-lite.conf, and place it on SOURCES/ .
-3. Fix SOURCES/package/fluent-agent-lite.conf as you want (ex: server name or servers list), and add servers list for your own.
-4. Download SPECS/fluent-agent-lite.spec, and place it on SPECS/ .
-5. run 'rpmbuild -ba SPECS/fluent-agent-lite.spec'
+1. Clone fluent-agent-lite repository from github.
+2. Move into the directory, and `$ ./make-rpm.sh`.
 
 To install each RHEL/CentOS host, use yum server, or copy and rpm -i on each host.
 
